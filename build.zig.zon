@@ -1,13 +1,6 @@
 .{
     .name = "zmup",
     .version = "0.0.0",
-
-    .dependencies = .{
-        .mach = .{
-            .url = "https://pkg.machengine.org/mach/8eb2da1044678d84a0a96fd92e5b72e51958dfd8.tar.gz",
-            .hash = "122098367c1e1a8bb0c5b8fe305a0a9a4e2542c088a1708b54c66e84d0123d74d955",
-        },
-    },
     .paths = .{
         "build.zig",
         "build.zig.zon",
