@@ -1,3 +1,3 @@
 # Zmup
 
-Zig music unpopular player
+Zig music player
