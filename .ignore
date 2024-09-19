@@ -1,0 +1,4 @@
+zig-out
+.git
+.zig-cache
+LICENSE
