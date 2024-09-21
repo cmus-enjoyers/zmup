@@ -1,24 +1,87 @@
 const std = @import("std");
+const vaxis = @import("vaxis");
+const Cell = vaxis.Cell;
+const TextInput = vaxis.widgets.TextInput;
+const border = vaxis.widgets.border;
+
+const Event = union(enum) {
+    key_press: vaxis.Key,
+    winsize: vaxis.Winsize,
+    focus_in,
+};
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const allocator = arena.allocator();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    var tty = try vaxis.Tty.init();
+    defer tty.deinit();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    var vx = try vaxis.init(allocator, .{});
+    defer vx.deinit(allocator, tty.anyWriter());
 
-    try bw.flush(); // don't forget to flush!
+    var loop: vaxis.Loop(Event) = .{
+        .tty = &tty,
+        .vaxis = &vx,
+    };
+    try loop.init();
+
+    try loop.start();
+    defer loop.stop();
+
+    // Optionally enter the alternate screen
+    try vx.enterAltScreen(tty.anyWriter());
+
+    var color_idx: u8 = 0;
+
+    var text_input = TextInput.init(allocator, &vx.unicode);
+    defer text_input.deinit();
+
+    try vx.queryTerminal(tty.anyWriter(), 1 * std.time.ns_per_s);
+
+    while (true) {
+        const event = loop.nextEvent();
+
+        switch (event) {
+            .key_press => |key| {
+                color_idx = switch (color_idx) {
+                    255 => 0,
+                    else => color_idx + 1,
+                };
+                if (key.matches('c', .{ .ctrl = true })) {
+                    break;
+                } else if (key.matches('l', .{ .ctrl = true })) {
+                    vx.queueRefresh();
+                } else {
+                    try text_input.update(.{ .key_press = key });
+                }
+            },
+            .winsize => |ws| try vx.resize(allocator, tty.anyWriter(), ws),
+            else => {},
+        }
+
+        const win = vx.window();
+
+        win.clear();
+
+        const style: vaxis.Style = .{
+            .fg = .{ .index = color_idx },
+        };
+
+        const child = win.child(.{
+            .x_off = win.width / 2 - 20,
+            .y_off = win.height / 2 - 3,
+            .width = .{ .limit = 40 },
+            .height = .{ .limit = 3 },
+            .border = .{
+                .where = .all,
+                .style = style,
+            },
+        });
+
+        text_input.draw(child);
+
+        try vx.render(tty.anyWriter());
+    }
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
