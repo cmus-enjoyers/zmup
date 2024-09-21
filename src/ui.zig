@@ -6,8 +6,8 @@ pub const Test = struct {
 };
 
 pub fn drawSimpleTable(allocator: std.mem.Allocator, win: vaxis.Window) !void {
-    const active_bg: vaxis.Cell.Color = .{ .rgb = .{ 64, 128, 255 } };
-    const selected_bg: vaxis.Cell.Color = .{ .rgb = .{ 32, 64, 255 } };
+    const active_bg: vaxis.Cell.Color = .{ .rgb = .{ 0, 0, 0 } };
+    const selected_bg: vaxis.Cell.Color = .{ .rgb = .{ 0, 0, 0 } };
 
     var tbl: vaxis.widgets.Table.TableContext = .{
         .active_bg = active_bg,
@@ -27,4 +27,14 @@ pub fn drawSimpleTable(allocator: std.mem.Allocator, win: vaxis.Window) !void {
     }
 
     try vaxis.widgets.Table.drawTable(allocator, win, multi, &tbl);
+}
+
+pub fn drawText(win: vaxis.Window, text: []const u8) !void {
+    const style: vaxis.Style = .{ .fg = .{
+        .rgb = .{255} ** 3,
+    } };
+
+    const segment: vaxis.Segment = .{ .text = text, .style = style };
+
+    _ = try win.printSegment(segment, .{});
 }

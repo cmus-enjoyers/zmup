@@ -30,14 +30,14 @@ pub fn main() !void {
     try loop.start();
     defer loop.stop();
 
-    try vx.enterAltScreen(tty.anyWriter());
+    const any_writer = tty.anyWriter();
+
+    try vx.enterAltScreen(any_writer);
 
     var text_input = TextInput.init(allocator, &vx.unicode);
     defer text_input.deinit();
 
-    try vx.queryTerminal(tty.anyWriter(), 1 * std.time.ns_per_s);
-
-    try vx.notify(tty.anyWriter(), "Hello", "Hello world");
+    try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
     while (true) {
         const event = loop.nextEvent();
@@ -50,7 +50,7 @@ pub fn main() !void {
                     try text_input.update(.{ .key_press = key });
                 }
             },
-            .winsize => |ws| try vx.resize(allocator, tty.anyWriter(), ws),
+            .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
         }
 
@@ -73,10 +73,10 @@ pub fn main() !void {
             },
         });
 
-        _ = child;
+        text_input.draw(child);
 
         try ui.drawSimpleTable(allocator, win);
 
-        try vx.render(tty.anyWriter());
+        try vx.render(any_writer);
     }
 }
