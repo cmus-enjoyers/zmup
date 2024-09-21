@@ -10,6 +10,34 @@ const Event = union(enum) {
     focus_in,
 };
 
+const Test = struct {
+    first: []const u8,
+};
+
+pub fn drawSimpleTable(allocator: std.mem.Allocator, win: vaxis.Window) !void {
+    const active_bg: vaxis.Cell.Color = .{ .rgb = .{ 64, 128, 255 } };
+    const selected_bg: vaxis.Cell.Color = .{ .rgb = .{ 32, 64, 255 } };
+
+    var tbl: vaxis.widgets.Table.TableContext = .{
+        .active_bg = active_bg,
+        .selected_bg = selected_bg,
+        .header_names = .{ .custom = &.{ "First", "Last", "Username", "Phone#", "Email" } },
+        .col_indexes = .{ .by_idx = &.{ 0, 1, 2, 4, 3 } },
+    };
+
+    const info = [_]Test{
+        .{ .first = "Hello" },
+    };
+
+    var multi = std.MultiArrayList(Test){};
+
+    for (info) |value| {
+        try multi.append(allocator, value);
+    }
+
+    try vaxis.widgets.Table.drawTable(allocator, win, multi, &tbl);
+}
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
@@ -35,6 +63,8 @@ pub fn main() !void {
     defer text_input.deinit();
 
     try vx.queryTerminal(tty.anyWriter(), 1 * std.time.ns_per_s);
+
+    try vx.notify(tty.anyWriter(), "Hello", "Hello world");
 
     while (true) {
         const event = loop.nextEvent();
@@ -70,9 +100,10 @@ pub fn main() !void {
             },
         });
 
-        text_input.draw(child);
+        _ = child;
+
+        try drawSimpleTable(allocator, win);
 
         try vx.render(tty.anyWriter());
     }
 }
-
