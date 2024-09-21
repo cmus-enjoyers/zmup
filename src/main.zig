@@ -31,8 +31,6 @@ pub fn main() !void {
 
     try vx.enterAltScreen(tty.anyWriter());
 
-    var color_idx: u8 = 0;
-
     var text_input = TextInput.init(allocator, &vx.unicode);
     defer text_input.deinit();
 
@@ -43,14 +41,8 @@ pub fn main() !void {
 
         switch (event) {
             .key_press => |key| {
-                color_idx = switch (color_idx) {
-                    255 => 0,
-                    else => color_idx + 1,
-                };
-                if (key.matches('c', .{ .ctrl = true })) {
+                if (key.matches('q', .{})) {
                     break;
-                } else if (key.matches('l', .{ .ctrl = true })) {
-                    vx.queueRefresh();
                 } else {
                     try text_input.update(.{ .key_press = key });
                 }
@@ -64,7 +56,7 @@ pub fn main() !void {
         win.clear();
 
         const style: vaxis.Style = .{
-            .fg = .{ .index = color_idx },
+            .fg = .{ .index = 100 },
         };
 
         const child = win.child(.{
