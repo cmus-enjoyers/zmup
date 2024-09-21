@@ -11,6 +11,9 @@ const Event = union(enum) {
     focus_in,
 };
 
+// TODO: add zmup (github.com/cmus-enjoyers/sneaky-cmup-10) and some cli things
+// TODO: man pages?!?!?!?!
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
