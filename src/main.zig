@@ -29,7 +29,6 @@ pub fn main() !void {
     try loop.start();
     defer loop.stop();
 
-    // Optionally enter the alternate screen
     try vx.enterAltScreen(tty.anyWriter());
 
     var color_idx: u8 = 0;
