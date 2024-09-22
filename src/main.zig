@@ -92,3 +92,5 @@ pub fn main() !void {
         try vx.render(any_writer);
     }
 }
+
+test "x" {}
