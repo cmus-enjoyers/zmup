@@ -5,14 +5,23 @@ pub const Playlist = struct {
     path: []const u8,
 };
 
+pub fn isDir(cwd: std.fs.Dir, path: []const u8) bool {
+    const stat = cwd.statFile(path) catch {
+        return false;
+    };
+
+    return stat.kind == .directory;
+}
+
 pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) ![]bool {
     var list = std.ArrayList(bool).init(allocator);
 
-    for (paths) |path| {
-        const stat = try fs.cwd().statFile(path);
-        const isDir = stat.kind == .directory;
+    const cwd = fs.cwd();
 
-        try list.append(isDir);
+    for (paths) |path| {
+        const dir = isDir(cwd, path);
+
+        try list.append(dir);
     }
 
     return list.items;

@@ -43,7 +43,7 @@ pub fn main() !void {
 
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
-    var playlist_paths = [_][]const u8{"/home/vktrenokh/.config/cmus/playlists"};
+    var playlist_paths = [_][]const u8{ "/home/vktrenokh/.config/cmus/playlists", "/home/vktrenokh/.config/cmus/playlists/bed" };
 
     const x = try playlists.getPlaylists(allocator, &playlist_paths);
 
@@ -86,11 +86,7 @@ pub fn main() !void {
         try ui.drawSimpleTable(allocator, win);
 
         for (x) |item| {
-            const segment: vaxis.Segment = .{
-                .text = try std.fmt.allocPrint(allocator, "is a dir? {}", .{item}),
-            };
-
-            _ = try win.printSegment(segment, .{});
+            try ui.drawText(win, try std.fmt.allocPrint(allocator, "is a dir {}\n", .{item}));
         }
 
         try vx.render(any_writer);
