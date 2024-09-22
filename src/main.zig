@@ -85,8 +85,8 @@ pub fn main() !void {
 
         try ui.drawSimpleTable(allocator, win);
 
-        for (x) |item| {
-            try ui.drawText(win, try std.fmt.allocPrint(allocator, "is a dir {}\n", .{item}));
+        for (x, 0..) |item, i| {
+            try ui.drawText(win, try std.fmt.allocPrint(allocator, "is a dir {}\n", .{item}), 0, i);
         }
 
         try vx.render(any_writer);

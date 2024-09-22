@@ -29,12 +29,12 @@ pub fn drawSimpleTable(allocator: std.mem.Allocator, win: vaxis.Window) !void {
     try vaxis.widgets.Table.drawTable(allocator, win, multi, &tbl);
 }
 
-pub fn drawText(win: vaxis.Window, text: []const u8) !void {
+pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: usize) !void {
     const style: vaxis.Style = .{ .fg = .{
         .rgb = .{255} ** 3,
     } };
 
     const segment: vaxis.Segment = .{ .text = text, .style = style };
 
-    _ = try win.printSegment(segment, .{});
+    _ = try win.printSegment(segment, .{ .row_offset = y_offset, .col_offset = x_offset });
 }
