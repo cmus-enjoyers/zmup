@@ -1,6 +1,7 @@
 const std = @import("std");
 const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
+const playlists = @import("playlists.zig");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -42,6 +43,10 @@ pub fn main() !void {
 
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
+    var playlist_paths = [_][]const u8{"/home/vktrenokh/.config/cmus/playlists"};
+
+    const x = try playlists.getPlaylists(allocator, &playlist_paths);
+
     while (true) {
         const event = loop.nextEvent();
 
@@ -79,6 +84,14 @@ pub fn main() !void {
         text_input.draw(child);
 
         try ui.drawSimpleTable(allocator, win);
+
+        for (x) |item| {
+            const segment: vaxis.Segment = .{
+                .text = try std.fmt.allocPrint(allocator, "is a dir? {}", .{item}),
+            };
+
+            _ = try win.printSegment(segment, .{});
+        }
 
         try vx.render(any_writer);
     }
