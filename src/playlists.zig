@@ -12,7 +12,13 @@ pub const Playlist = struct {
     }
 
     pub fn deinit(self: Playlist) void {
-        self.content.?.deinit();
+        if (self.content) |content| {
+            for (content.items) |item| {
+                self.allocator.free(item);
+            }
+
+            content.deinit();
+        }
     }
 
     pub fn load(self: *Playlist, allocator: Allocator) ![][]const u8 {
