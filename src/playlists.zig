@@ -4,12 +4,17 @@ const Allocator = std.mem.Allocator;
 
 pub const Playlist = struct {
     path: []const u8,
+    name: []const u8,
     content: ?std.ArrayList([]const u8) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) Playlist {
-        return Playlist{ .allocator = allocator, .path = path };
+        return Playlist{
+            .allocator = allocator,
+            .path = path,
+            .name = std.fs.path.stem(path),
+        };
     }
 
     pub fn deinit(self: Playlist) void {
@@ -68,17 +73,23 @@ pub fn isDir(cwd: std.fs.Dir, path: []const u8) bool {
     return stat.kind == .directory;
 }
 
+pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
+    var playlist = Playlist.init(list.allocator, path);
+    try list.append(&playlist);
+}
+
 pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
     var list = std.ArrayList(*Playlist).init(allocator);
+    _ = &list;
 
     const cwd = fs.cwd();
 
     for (paths) |path| {
-        const dir = isDir(cwd, path);
+        const stat = try cwd.statFile(path);
 
-        if (!dir) {
-            var playlist = Playlist.init(allocator, path);
-            try list.append(&playlist);
+        switch (stat.kind) {
+            .file => try appendPlaylist(&list, path),
+            else => {},
         }
     }
 

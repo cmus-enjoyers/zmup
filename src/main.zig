@@ -43,12 +43,14 @@ pub fn main() !void {
     //
     // try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
     //
-    var playlist_paths: [1][]const u8 = .{"/home/vktrenokh/.config/cmus/playlists/bed"};
+    var playlist_paths: [1][]const u8 = .{
+        "/home/vktrenokh/.config/cmus/playlists/bed",
+    };
 
     const x = try playlists.getPlaylists(allocator, &playlist_paths);
 
     for (x.items) |item| {
-        std.debug.print("{any}\n", .{try item.load()});
+        std.debug.print("{s}\n", .{item.name});
     }
     //
     // while (true) {
