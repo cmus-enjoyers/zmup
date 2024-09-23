@@ -77,13 +77,12 @@ pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
 pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
     var sub_playlist = std.ArrayList(*Playlist).init(list.allocator);
 
-    const dir = try fs.openDirAbsolute(path, .{ .iterate = true });
+    var dir = try fs.openDirAbsolute(path, .{ .iterate = true });
+    defer dir.close();
 
     var iterator = dir.iterate();
 
     while (try iterator.next()) |item| {
-        std.debug.print("{s}\n", .{try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name })});
-
         switch (item.kind) {
             .file => try appendPlaylist(
                 &sub_playlist,
@@ -91,10 +90,6 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
             ),
             else => {},
         }
-    }
-
-    for (sub_playlist.items) |item| {
-        std.debug.print("{any}\n", .{item});
     }
 
     try list.appendSlice(sub_playlist.items);
