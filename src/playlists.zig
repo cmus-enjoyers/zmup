@@ -5,6 +5,7 @@ const Allocator = std.mem.Allocator;
 pub const Playlist = struct {
     path: []const u8,
     content: ?std.ArrayList([]const u8) = null,
+    contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) Playlist {
@@ -13,41 +14,47 @@ pub const Playlist = struct {
 
     pub fn deinit(self: Playlist) void {
         if (self.content) |content| {
-            for (content.items) |item| {
-                self.allocator.free(item);
-            }
-
             content.deinit();
+        }
+
+        if (self.contentUnsplitted) |content| {
+            self.allocator.free(content);
         }
     }
 
-    pub fn load(self: *Playlist, allocator: Allocator) ![][]const u8 {
+    pub fn load(self: *Playlist) ![][]const u8 {
         if (self.content) |content| {
             return content.items;
         }
 
-        var content = std.ArrayList([]const u8).init(allocator);
+        var content = std.ArrayList([]const u8).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
 
-        const data = try file.readToEndAlloc(
-            allocator,
-            try file.getEndPos(),
-        );
-        defer allocator.free(data);
+        const data =
+            try file.readToEndAlloc(self.allocator, try file.getEndPos());
 
-        var iterator = std.mem.splitAny(
+        var iterator = std.mem.splitSequence(
             u8,
             data,
             "\n",
         );
 
         while (iterator.next()) |item| {
-            try content.append(try allocator.dupe(u8, item));
+            if (item.len == 0) {
+                continue;
+            }
+
+            std.debug.print("{s} - {}\n", .{
+                item,
+                item.len,
+            });
+            try content.append(item);
         }
 
         self.content = content;
+        self.contentUnsplitted = data;
 
         return content.items;
     }
@@ -61,8 +68,8 @@ pub fn isDir(cwd: std.fs.Dir, path: []const u8) bool {
     return stat.kind == .directory;
 }
 
-pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) ![]Playlist {
-    var list = std.ArrayList(Playlist).init(allocator);
+pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
+    var list = std.ArrayList(*Playlist).init(allocator);
 
     const cwd = fs.cwd();
 
@@ -71,12 +78,11 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) ![]Playli
 
         if (!dir) {
             var playlist = Playlist.init(allocator, path);
-            _ = try playlist.load(allocator);
-            try list.append(playlist);
+            try list.append(&playlist);
         }
     }
 
-    return list.items;
+    return list;
 }
 
 test "Playlist" {
@@ -85,7 +91,8 @@ test "Playlist" {
 
     try std.testing.expect(playlist.content == null);
 
-    _ = try playlist.load(std.testing.allocator);
+    const items = try playlist.load();
+    try std.testing.expect(items.len > 0);
 
     try std.testing.expect(playlist.content != null);
 }
