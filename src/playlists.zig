@@ -51,10 +51,6 @@ pub const Playlist = struct {
                 continue;
             }
 
-            std.debug.print("{s} - {}\n", .{
-                item,
-                item.len,
-            });
             try content.append(item);
         }
 
@@ -78,9 +74,34 @@ pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
     try list.append(&playlist);
 }
 
+pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
+    var sub_playlist = std.ArrayList(*Playlist).init(list.allocator);
+
+    const dir = try fs.openDirAbsolute(path, .{ .iterate = true });
+
+    var iterator = dir.iterate();
+
+    while (try iterator.next()) |item| {
+        std.debug.print("{s}\n", .{try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name })});
+
+        switch (item.kind) {
+            .file => try appendPlaylist(
+                &sub_playlist,
+                try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }),
+            ),
+            else => {},
+        }
+    }
+
+    for (sub_playlist.items) |item| {
+        std.debug.print("{any}\n", .{item});
+    }
+
+    try list.appendSlice(sub_playlist.items);
+}
+
 pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
     var list = std.ArrayList(*Playlist).init(allocator);
-    _ = &list;
 
     const cwd = fs.cwd();
 
@@ -89,7 +110,7 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
 
         switch (stat.kind) {
             .file => try appendPlaylist(&list, path),
-            else => {},
+            else => try appendPlaylistCollection(&list, path),
         }
     }
 
