@@ -49,6 +49,7 @@ pub fn main() !void {
     };
 
     const x = try playlists.getPlaylists(allocator, &playlist_paths);
+    defer x.deinit();
 
     for (x.items) |item| {
         std.debug.print("{s}\n", .{item.name});

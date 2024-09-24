@@ -61,17 +61,12 @@ pub const Playlist = struct {
     }
 };
 
-pub fn isDir(cwd: std.fs.Dir, path: []const u8) bool {
-    const stat = cwd.statFile(path) catch {
-        return false;
-    };
-
-    return stat.kind == .directory;
-}
-
 pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
-    var playlist = Playlist.init(list.allocator, path);
-    try list.append(&playlist);
+    const ptr = try list.allocator.create(Playlist);
+
+    ptr.* = Playlist.init(list.allocator, path);
+
+    try list.append(ptr);
 }
 
 pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
