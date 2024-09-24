@@ -71,6 +71,7 @@ pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
 
 pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
     var sub_playlist = std.ArrayList(*Playlist).init(list.allocator);
+    defer sub_playlist.deinit();
 
     var dir = try fs.openDirAbsolute(path, .{ .iterate = true });
     defer dir.close();
@@ -79,10 +80,12 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
 
     while (try iterator.next()) |item| {
         switch (item.kind) {
-            .file => try appendPlaylist(
-                &sub_playlist,
-                try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }),
-            ),
+            .file => {
+                try appendPlaylist(
+                    &sub_playlist,
+                    try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }),
+                );
+            },
             else => {},
         }
     }
@@ -117,4 +120,18 @@ test "Playlist" {
     try std.testing.expect(items.len > 0);
 
     try std.testing.expect(playlist.content != null);
+
+    var paths: [1][]const u8 = .{
+        "/home/vktrenokh/.config/cmus/playlists/",
+    };
+    const playlists = try getPlaylists(std.testing.allocator, &paths);
+    defer {
+        for (playlists.items) |item| {
+            std.testing.allocator.free(item.path);
+            item.deinit();
+            std.testing.allocator.destroy(item);
+        }
+        playlists.deinit();
+    }
+    try std.testing.expect(playlists.items.len > 0);
 }
