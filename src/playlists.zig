@@ -9,11 +9,13 @@ pub const Playlist = struct {
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, path: []const u8) Playlist {
+    pub fn init(allocator: std.mem.Allocator, path: []const u8) !Playlist {
+        const duped = try allocator.dupe(u8, path);
+
         return Playlist{
             .allocator = allocator,
-            .path = path,
-            .name = std.fs.path.stem(path),
+            .path = duped,
+            .name = std.fs.path.stem(duped),
         };
     }
 
@@ -25,6 +27,8 @@ pub const Playlist = struct {
         if (self.contentUnsplitted) |content| {
             self.allocator.free(content);
         }
+
+        self.allocator.free(self.path);
     }
 
     pub fn load(self: *Playlist) ![][]const u8 {
@@ -64,7 +68,7 @@ pub const Playlist = struct {
 pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
     const ptr = try list.allocator.create(Playlist);
 
-    ptr.* = Playlist.init(list.allocator, path);
+    ptr.* = try Playlist.init(list.allocator, path);
 
     try list.append(ptr);
 }
@@ -81,10 +85,10 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
     while (try iterator.next()) |item| {
         switch (item.kind) {
             .file => {
-                try appendPlaylist(
-                    &sub_playlist,
-                    try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }),
-                );
+                const item_path = try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name });
+                defer list.allocator.free(item_path);
+
+                try appendPlaylist(&sub_playlist, item_path);
             },
             else => {},
         }
@@ -111,7 +115,7 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
 }
 
 test "Playlist" {
-    var playlist = Playlist.init(std.testing.allocator, "/home/vktrenokh/.config/cmus/playlists/bed");
+    var playlist = try Playlist.init(std.testing.allocator, "/home/vktrenokh/.config/cmus/playlists/bed");
     defer playlist.deinit();
 
     try std.testing.expect(playlist.content == null);
@@ -127,7 +131,6 @@ test "Playlist" {
     const playlists = try getPlaylists(std.testing.allocator, &paths);
     defer {
         for (playlists.items) |item| {
-            std.testing.allocator.free(item.path);
             item.deinit();
             std.testing.allocator.destroy(item);
         }
