@@ -85,10 +85,10 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
     while (try iterator.next()) |item| {
         switch (item.kind) {
             .file => {
-                const item_path = try std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name });
+                const item_path = std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }) catch continue;
                 defer list.allocator.free(item_path);
 
-                try appendPlaylist(&sub_playlist, item_path);
+                appendPlaylist(&sub_playlist, item_path) catch continue;
             },
             else => {},
         }
@@ -103,11 +103,11 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
     const cwd = fs.cwd();
 
     for (paths) |path| {
-        const stat = try cwd.statFile(path);
+        const stat = cwd.statFile(path) catch continue;
 
         switch (stat.kind) {
-            .file => try appendPlaylist(&list, path),
-            else => try appendPlaylistCollection(&list, path),
+            .file => appendPlaylist(&list, path) catch continue,
+            else => appendPlaylistCollection(&list, path) catch continue,
         }
     }
 
