@@ -43,9 +43,10 @@ pub fn main() !void {
     //
     // try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
     //
-    var playlist_paths: [3][]const u8 = .{
-        "/home/vktrenokh/.config/cmus/playlists/bed",
-        "/home/vktrenokh/.config/cmus/playlists/",
+    const home = std.posix.getenv("HOME");
+
+    var playlist_paths: [2][]const u8 = .{
+        try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" }),
         "/home/vktrenokh/.config/cmus/xplaylists/",
     };
 
