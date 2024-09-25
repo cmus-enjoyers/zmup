@@ -1,0 +1,140 @@
+const std = @import("std");
+const fs = std.fs;
+const Allocator = std.mem.Allocator;
+
+pub const Playlist = struct {
+    path: []const u8,
+    name: []const u8,
+    content: ?std.ArrayList([]const u8) = null,
+    contentUnsplitted: ?[]const u8 = null,
+    allocator: Allocator,
+
+    pub fn init(allocator: std.mem.Allocator, path: []const u8) !Playlist {
+        const duped = try allocator.dupe(u8, path);
+
+        return Playlist{
+            .allocator = allocator,
+            .path = duped,
+            .name = std.fs.path.stem(duped),
+        };
+    }
+
+    pub fn deinit(self: Playlist) void {
+        if (self.content) |content| {
+            content.deinit();
+        }
+
+        if (self.contentUnsplitted) |content| {
+            self.allocator.free(content);
+        }
+
+        self.allocator.free(self.path);
+    }
+
+    pub fn load(self: *Playlist) ![][]const u8 {
+        if (self.content) |content| {
+            return content.items;
+        }
+
+        var content = std.ArrayList([]const u8).init(self.allocator);
+
+        const file = try std.fs.openFileAbsolute(self.path, .{});
+        defer file.close();
+
+        const data =
+            try file.readToEndAlloc(self.allocator, try file.getEndPos());
+
+        var iterator = std.mem.splitSequence(
+            u8,
+            data,
+            "\n",
+        );
+
+        while (iterator.next()) |item| {
+            if (item.len == 0) {
+                continue;
+            }
+
+            try content.append(item);
+        }
+
+        self.content = content;
+        self.contentUnsplitted = data;
+
+        return content.items;
+    }
+};
+
+pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
+    const ptr = try list.allocator.create(Playlist);
+
+    ptr.* = try Playlist.init(list.allocator, path);
+
+    try list.append(ptr);
+}
+
+pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
+    var sub_playlist = std.ArrayList(*Playlist).init(list.allocator);
+    defer sub_playlist.deinit();
+
+    var dir = try fs.openDirAbsolute(path, .{ .iterate = true });
+    defer dir.close();
+
+    var iterator = dir.iterate();
+
+    while (try iterator.next()) |item| {
+        switch (item.kind) {
+            .file => {
+                const item_path = std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }) catch continue;
+                defer list.allocator.free(item_path);
+
+                appendPlaylist(&sub_playlist, item_path) catch continue;
+            },
+            else => {},
+        }
+    }
+
+    try list.appendSlice(sub_playlist.items);
+}
+
+pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
+    var list = std.ArrayList(*Playlist).init(allocator);
+
+    const cwd = fs.cwd();
+
+    for (paths) |path| {
+        const stat = cwd.statFile(path) catch continue;
+
+        switch (stat.kind) {
+            .file => appendPlaylist(&list, path) catch continue,
+            else => appendPlaylistCollection(&list, path) catch continue,
+        }
+    }
+
+    return list;
+}
+
+test "Playlist" {
+    var playlist = try Playlist.init(std.testing.allocator, "/home/vktrenokh/.config/cmus/playlists/bed");
+    defer playlist.deinit();
+
+    try std.testing.expect(playlist.content == null);
+
+    const items = try playlist.load();
+    try std.testing.expect(items.len > 0);
+
+    try std.testing.expect(playlist.content != null);
+
+    var paths: [1][]const u8 = .{
+        "/home/vktrenokh/.config/cmus/playlists/",
+    };
+    const playlists = try getPlaylists(std.testing.allocator, &paths);
+    defer {
+        for (playlists.items) |item| {
+            item.deinit();
+            std.testing.allocator.destroy(item);
+        }
+        playlists.deinit();
+    }
+    try std.testing.expect(playlists.items.len > 0);
+}
