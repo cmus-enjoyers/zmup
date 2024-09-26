@@ -3,6 +3,7 @@ const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
+const track = @import("track.zig");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -58,9 +59,11 @@ pub fn main() !void {
         music.deinit();
     }
 
-    for (music.items) |item| {
-        std.debug.print("{s}\n", .{item.name});
-    }
+    // for (music.items) |item| {
+    //     std.debug.print("{s}\n", .{item.name});
+    // }
+    //
+    try track.testFf();
     //
     // while (true) {
     //     const event = loop.nextEvent();

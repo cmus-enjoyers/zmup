@@ -34,6 +34,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    exe.linkSystemLibrary("avformat");
+    exe.linkSystemLibrary("avutil");
+    exe.linkSystemLibrary("avcodec");
+    exe.linkSystemLibrary("c");
+
     const vaxis_dep = b.dependency("vaxis", .{
         .target = target,
         .optimize = optimize,
