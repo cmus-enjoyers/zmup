@@ -1,48 +1,57 @@
 const c = @import("root.zig").c;
 const std = @import("std");
 
-pub fn getMetadata(metadata: *c.AVDictionary) void {
-    var tag: ?*c.AVDictionaryEntry = null;
-    while (true) {
-        tag = c.av_dict_get(metadata, "", tag, c.AV_DICT_IGNORE_SUFFIX);
-        if (tag == null) break;
+const Metadata = struct {
+    key: []const u8,
+    value: []const u8,
+};
 
-        const key = tag.?.key;
-        const value = tag.?.value;
-        if (key != null and value != null) {
-            const keyStr = std.mem.span(key);
-            const valueStr = std.mem.span(value);
-            std.debug.print("{s}: {s}\n", .{ keyStr, valueStr });
+const Iterator = struct {
+    dictionary: *c.AVDictionary,
+    tag: ?*c.AVDictionaryEntry = null,
+
+    pub fn next(self: *Iterator) ?Metadata {
+        self.tag = c.av_dict_get(self.dictionary, "", self.tag, c.AV_DICT_IGNORE_SUFFIX);
+
+        if (self.tag) |value| {
+            return Metadata{
+                .key = std.mem.span(value.key),
+                .value = std.mem.span(value.value),
+            };
         }
+
+        return null;
     }
-}
+};
 
-pub fn testFf() !void {
-    const file = "/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac";
+pub const MetadataError = error{
+    CannotOpenInput,
+    ContextIsNull,
+    StreamInfoNotFound,
+    NoMetadata,
+};
 
+pub fn getMetadata(path: []const u8) MetadataError!Iterator {
     _ = c.avformat_network_init();
 
     var format_ctx: ?*c.AVFormatContext = null;
 
-    if (c.avformat_open_input(&format_ctx, file.ptr, null, null) != 0) {
-        std.debug.print("no open input", .{});
-        return;
+    if (c.avformat_open_input(&format_ctx, path.ptr, null, null) != 0) {
+        return MetadataError.CannotOpenInput;
     }
-    defer c.avformat_close_input(&format_ctx);
+    // defer c.avformat_close_input(&format_ctx);
 
     if (format_ctx == null) {
-        std.debug.print("no format ctx", .{});
-        return;
+        return MetadataError.ContextIsNull;
     }
 
     if (c.avformat_find_stream_info(format_ctx, null) < 0) {
-        std.debug.print("no stream info", .{});
-        return;
+        return MetadataError.StreamInfoNotFound;
     }
 
     if (format_ctx.?.metadata) |metadata| {
-        getMetadata(metadata);
-    } else {
-        std.debug.print("No metadata found.\n", .{});
+        return Iterator{ .dictionary = metadata };
     }
+
+    return MetadataError.NoMetadata;
 }

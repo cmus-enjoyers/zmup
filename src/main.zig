@@ -63,7 +63,11 @@ pub fn main() !void {
     //     std.debug.print("{s}\n", .{item.name});
     // }
     //
-    try track.testFf();
+    var iterator = try track.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
+
+    while (iterator.next()) |value| {
+        std.debug.print("{s}: {s}", .{ value.key, value.value });
+    }
     //
     // while (true) {
     //     const event = loop.nextEvent();
