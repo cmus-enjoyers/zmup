@@ -63,12 +63,14 @@ pub fn main() !void {
     //     std.debug.print("{s}\n", .{item.name});
     // }
     //
-    var iterator = try track.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
+    var metadata = try track.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
+    defer metadata.deinit();
 
+    var iterator = try metadata.iterate();
     while (iterator.next()) |value| {
-        std.debug.print("{s}: {s}", .{ value.key, value.value });
+        std.debug.print("{s}: {s}\n", .{ value.key, value.value });
     }
-    //
+
     // while (true) {
     //     const event = loop.nextEvent();
     //
