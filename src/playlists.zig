@@ -1,12 +1,13 @@
 const std = @import("std");
-const track = @import("track.zig");
+const tracks = @import("track.zig");
+const Track = tracks.Track;
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
 
 pub const Playlist = struct {
     path: []const u8,
     name: []const u8,
-    content: ?std.ArrayList(track.Track) = null,
+    content: ?std.ArrayList(*Track) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
 
@@ -32,12 +33,12 @@ pub const Playlist = struct {
         self.allocator.free(self.path);
     }
 
-    pub fn load(self: *Playlist) ![]track.Track {
+    pub fn load(self: *Playlist) ![]*Track {
         if (self.content) |content| {
             return content.items;
         }
 
-        var content = std.ArrayList(track.Track).init(self.allocator);
+        var content = std.ArrayList(*Track).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
@@ -56,8 +57,9 @@ pub const Playlist = struct {
                 continue;
             }
 
-            std.debug.print("{s}\n", .{item});
-            try content.append(try track.Track.init(self.allocator, item));
+            var track = try Track.init(self.allocator, item);
+
+            try content.append(&track);
         }
 
         self.content = content;

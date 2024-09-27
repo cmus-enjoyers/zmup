@@ -5,6 +5,7 @@ const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
 const track = @import("track.zig");
 const metadata = @import("metadata.zig");
+const c = @import("root.zig").c;
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -47,6 +48,7 @@ pub fn main() !void {
     // try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
     //
     const home = std.posix.getenv("HOME");
+    c.av_log_set_level(c.AV_LOG_QUIET);
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
@@ -60,20 +62,27 @@ pub fn main() !void {
         music.deinit();
     }
 
-    for (music.items) |item| {
-        const content = try item.load();
+    const writer = std.io.getStdOut().writer();
 
+    for (music.items) |item| {
+        var content = try item.load();
+        _ = &content;
+
+        try writer.writeAll("item\n");
         for (content) |track| {
             if (track.metadata) |value| {
-                std.debug.print("{any}", .{value});
+                var iterator = value.iterate() catch {
+                    _ = try writer.write("no metadata in the context");
+                    continue;
+                };
+                while (iterator.next()) |pair| {
+                    _ = pair;
+                    _ = try writer.write("got pair");
+                }
+                _ = &iterator;
             }
         }
-
-        std.debug.print("\n\n", .{});
     }
-
-    var metadata_metadata = try metadata.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
-    defer metadata_metadata.deinit();
 
     // while (true) {
     //     const event = loop.nextEvent();
