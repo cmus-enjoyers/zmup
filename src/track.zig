@@ -7,7 +7,7 @@ const MetadataPair = struct {
 };
 
 const Iterator = struct {
-    dictionary: *c.AVDictionary,
+    dictionary: *const c.AVDictionary,
     tag: ?*c.AVDictionaryEntry = null,
 
     pub fn next(self: *Iterator) ?MetadataPair {
@@ -44,7 +44,7 @@ const Metadata = struct {
     }
 
     pub fn deinit(self: *Metadata) void {
-        c.avformat_close_input(&self.context);
+        c.avformat_close_input(@ptrCast(&self.context));
     }
 };
 
