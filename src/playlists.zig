@@ -56,6 +56,7 @@ pub const Playlist = struct {
                 continue;
             }
 
+            std.debug.print("{s}\n", .{item});
             try content.append(try track.Track.init(self.allocator, item));
         }
 

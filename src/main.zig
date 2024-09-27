@@ -61,12 +61,12 @@ pub fn main() !void {
     }
 
     for (music.items) |item| {
-        std.debug.print("{s}\n", .{item.name});
-
-        const content = item.load() catch continue;
+        const content = try item.load();
 
         for (content) |track| {
-            std.debug.print("{s}, ", .{track.name});
+            if (track.metadata) |value| {
+                std.debug.print("{any}", .{value});
+            }
         }
 
         std.debug.print("\n\n", .{});
