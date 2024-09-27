@@ -4,6 +4,7 @@ const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
 const track = @import("track.zig");
+const metadata = @import("metadata.zig");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -62,11 +63,11 @@ pub fn main() !void {
     // for (music.items) |item| {
     //     std.debug.print("{s}\n", .{item.name});
     // }
-    //
-    var metadata = try track.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
-    defer metadata.deinit();
 
-    var iterator = try metadata.iterate();
+    var metadata_metadata = try metadata.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
+    defer metadata_metadata.deinit();
+
+    var iterator = try metadata_metadata.iterate();
     while (iterator.next()) |value| {
         std.debug.print("{s}: {s}\n", .{ value.key, value.value });
     }
