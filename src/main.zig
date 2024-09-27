@@ -60,17 +60,20 @@ pub fn main() !void {
         music.deinit();
     }
 
-    // for (music.items) |item| {
-    //     std.debug.print("{s}\n", .{item.name});
-    // }
+    for (music.items) |item| {
+        std.debug.print("{s}\n", .{item.name});
+
+        const content = item.load() catch continue;
+
+        for (content) |track| {
+            std.debug.print("{s}, ", .{track.name});
+        }
+
+        std.debug.print("\n\n", .{});
+    }
 
     var metadata_metadata = try metadata.getMetadata("/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
     defer metadata_metadata.deinit();
-
-    var iterator = try metadata_metadata.iterate();
-    while (iterator.next()) |value| {
-        std.debug.print("{s}: {s}\n", .{ value.key, value.value });
-    }
 
     // while (true) {
     //     const event = loop.nextEvent();

@@ -24,7 +24,7 @@ const Iterator = struct {
     }
 };
 
-const Metadata = struct {
+pub const Metadata = struct {
     context: *c.AVFormatContext,
 
     pub fn init(context: ?*c.AVFormatContext) MetadataError!Metadata {
