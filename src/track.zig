@@ -29,8 +29,10 @@ pub const Track = struct {
     pub fn deinit(self: Track) void {
         self.allocator.free(self.path);
 
-        if (self.metadata) |value| {
-            value.deinit();
-        }
+        // somehow this thing breaks everything...
+        // i dont know when to deinit it.
+        // if (self.metadata) |value| {
+        //     value.deinit();
+        // }
     }
 };

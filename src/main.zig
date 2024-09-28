@@ -62,25 +62,20 @@ pub fn main() !void {
         music.deinit();
     }
 
-    const writer = std.io.getStdOut().writer();
-
     for (music.items) |item| {
-        var content = try item.load();
+        var content = item.load() catch continue;
         _ = &content;
 
-        try writer.writeAll("item\n");
         for (content) |track| {
             if (track.metadata) |value| {
                 var iterator = value.iterate() catch {
-                    _ = try writer.write("no metadata in the context");
                     continue;
                 };
-                while (iterator.next()) |pair| {
-                    _ = pair;
-                    _ = try writer.write("got pair");
-                }
                 _ = &iterator;
+                continue;
             }
+
+            std.debug.print("no metadata\n", .{});
         }
     }
 

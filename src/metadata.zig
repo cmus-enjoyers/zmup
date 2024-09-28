@@ -36,15 +36,19 @@ pub const Metadata = struct {
     }
 
     pub fn iterate(self: *Metadata) MetadataError!Iterator {
-        if (self.context.metadata) |metadata| {
-            return Iterator{ .dictionary = metadata };
-        }
+        // if (self.context.metadata) |metadata| {
+        //     std.debug.print("in the capture (iterator) {any}\n", .{metadata});
+        //     return Iterator{ .dictionary = metadata };
+        // }
+        std.debug.print("data = {any}\n", .{self.context.metadata});
 
         return MetadataError.NoMetadata;
     }
 
     pub fn deinit(self: *Metadata) void {
-        c.avformat_close_input(@ptrCast(&self.context));
+        _ = self;
+        std.debug.print("x", .{});
+        // c.avformat_close_input(@ptrCast(&self.context));
     }
 };
 
@@ -56,13 +60,14 @@ pub const MetadataError = error{
 };
 
 pub fn getMetadata(path: []const u8) MetadataError!Metadata {
-    _ = c.avformat_network_init();
-
-    var format_ctx: ?*c.AVFormatContext = null;
+    var format_ctx: ?*c.AVFormatContext = c.avformat_alloc_context();
+    defer c.avformat_free_context(format_ctx);
+    // TODO: allocator.create
 
     if (c.avformat_open_input(&format_ctx, path.ptr, null, null) != 0) {
         return MetadataError.CannotOpenInput;
     }
+    std.debug.print("{any} - {s}\n", .{ &format_ctx, path });
 
     if (c.avformat_find_stream_info(format_ctx, null) != 0) {
         return MetadataError.StreamInfoNotFound;
