@@ -25,14 +25,10 @@ const Iterator = struct {
 };
 
 pub const Metadata = struct {
-    context: *c.AVFormatContext,
+    context: **c.AVFormatContext,
 
-    pub fn init(context: ?*c.AVFormatContext) MetadataError!Metadata {
-        if (context) |value| {
-            return Metadata{ .context = value };
-        }
-
-        return MetadataError.NoMetadata;
+    pub fn init(context: **c.AVFormatContext) MetadataError!Metadata {
+        return Metadata{ .context = context };
     }
 
     pub fn iterate(self: *Metadata) MetadataError!Iterator {
@@ -40,7 +36,7 @@ pub const Metadata = struct {
         //     std.debug.print("in the capture (iterator) {any}\n", .{metadata});
         //     return Iterator{ .dictionary = metadata };
         // }
-        std.debug.print("data = {any}\n", .{self.context.metadata});
+        std.debug.print("data = {any}\n", .{self.context});
 
         return MetadataError.NoMetadata;
     }
@@ -59,19 +55,24 @@ pub const MetadataError = error{
     NoMetadata,
 };
 
-pub fn getMetadata(path: []const u8) MetadataError!Metadata {
-    var format_ctx: ?*c.AVFormatContext = c.avformat_alloc_context();
-    defer c.avformat_free_context(format_ctx);
-    // TODO: allocator.create
+// TODO: allocator.create
+pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
+    const ptr = try allocator.create(*c.AVFormatContext);
+    var duped_path = try allocator.dupe(u8, path);
+    _ = &duped_path;
 
-    if (c.avformat_open_input(&format_ctx, path.ptr, null, null) != 0) {
+    ptr.* = c.avformat_alloc_context();
+
+    if (c.avformat_open_input(@ptrCast(ptr), "/home/vktrenokh/Music/jump/ridge-racer-type-4/17 Move Me.flac", null, null) != 0) {
         return MetadataError.CannotOpenInput;
     }
-    std.debug.print("{any} - {s}\n", .{ &format_ctx, path });
 
-    if (c.avformat_find_stream_info(format_ctx, null) != 0) {
-        return MetadataError.StreamInfoNotFound;
-    }
+    std.debug.print("after oepn input", .{});
 
-    return try Metadata.init(format_ctx);
+    // if (c.avformat_find_stream_info(@ptrCast(ptr), null) != 0) {
+    //     return MetadataError.StreamInfoNotFound;
+    // }
+    std.debug.print("after find stream info", .{});
+
+    return try Metadata.init(ptr);
 }

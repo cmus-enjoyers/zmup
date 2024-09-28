@@ -10,7 +10,7 @@ pub const Track = struct {
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Track {
         const duped = try allocator.dupe(u8, path);
 
-        var track_metadata = metadata.getMetadata(duped) catch {
+        var track_metadata = metadata.getMetadata(allocator, duped) catch {
             return Track{
                 .path = duped,
                 .name = std.fs.path.stem(duped),
