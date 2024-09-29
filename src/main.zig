@@ -68,13 +68,14 @@ pub fn main() !void {
 
         for (content) |track| {
             if (track.metadata) |value| {
-                var iterator = value.iterate() catch |err| {
-                    std.debug.print("Catch {}\n", .{err});
+                var iterator = value.iterate() catch {
+                    std.debug.print("continuing\n", .{});
                     continue;
                 };
-                while (iterator.next()) |pair| {
-                    std.debug.print("{s} - {s}", .{ pair.key, pair.value });
+                while (try iterator.next()) |x| {
+                    std.debug.print("{any}\n", .{x});
                 }
+                _ = &iterator;
                 continue;
             }
         }

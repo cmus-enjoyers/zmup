@@ -7,11 +7,12 @@ const MetadataPair = struct {
 };
 
 const Iterator = struct {
-    dictionary: *const c.AVDictionary,
+    allocator: std.mem.Allocator,
+    dictionary: *c.AVDictionary,
     tag: ?*c.AVDictionaryEntry = null,
 
-    pub fn next(self: *Iterator) ?MetadataPair {
-        self.tag = c.av_dict_get(self.dictionary, "", self.tag, c.AV_DICT_IGNORE_SUFFIX);
+    pub fn next(self: *Iterator) !?MetadataPair {
+        self.tag = c.av_dict_get(null, "", null, c.AV_DICT_IGNORE_SUFFIX);
 
         if (self.tag) |value| {
             return MetadataPair{
@@ -26,12 +27,13 @@ const Iterator = struct {
 
 pub const Metadata = struct {
     context: ?**c.AVFormatContext = null,
+    allocator: std.mem.Allocator,
 
     pub fn iterate(self: Metadata) MetadataError!Iterator {
         if (self.context) |context| {
             if (context.*.*.metadata) |d| {
                 std.debug.print("test", .{});
-                return Iterator{ .dictionary = d };
+                return Iterator{ .dictionary = d, .allocator = self.allocator };
             }
 
             return MetadataError.NoMetadata;
@@ -58,17 +60,22 @@ pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
 
     ptr.* = c.avformat_alloc_context();
 
-    if (@as(?*c.AVFormatContext, ptr.*) == null) {
-        return MetadataError.NoMetadata;
-    }
+    var context: ?*c.AVFormatContext = null;
 
-    if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
+    if (c.avformat_open_input(@ptrCast(&context), @ptrCast(path), null, null) != 0) {
         return MetadataError.CannotOpenInput;
     }
 
-    if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
+    if (c.avformat_find_stream_info(@ptrCast(context), null) != 0) {
         return MetadataError.StreamInfoNotFound;
     }
 
-    return Metadata{ .context = ptr };
+    if (context) |*value| {
+        return Metadata{
+            .context = value,
+            .allocator = allocator,
+        };
+    }
+
+    return MetadataError.ContextIsNull;
 }
