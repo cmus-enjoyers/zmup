@@ -63,16 +63,13 @@ pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
 
     ptr.* = c.avformat_alloc_context();
 
-    if (c.avformat_open_input(@ptrCast(ptr), "/home/vktrenokh/Music/jump/ridge-racer-type-4/17 Move Me.flac", null, null) != 0) {
+    if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
         return MetadataError.CannotOpenInput;
     }
 
-    std.debug.print("after oepn input", .{});
-
-    // if (c.avformat_find_stream_info(@ptrCast(ptr), null) != 0) {
-    //     return MetadataError.StreamInfoNotFound;
-    // }
-    std.debug.print("after find stream info", .{});
+    if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
+        return MetadataError.StreamInfoNotFound;
+    }
 
     return try Metadata.init(ptr);
 }
