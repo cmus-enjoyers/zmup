@@ -25,19 +25,17 @@ const Iterator = struct {
 };
 
 pub const Metadata = struct {
-    context: **c.AVFormatContext,
+    context: ?**c.AVFormatContext = null,
 
-    pub fn init(context: **c.AVFormatContext) MetadataError!Metadata {
-        return Metadata{ .context = context };
-    }
+    pub fn iterate(self: Metadata) MetadataError!Iterator {
+        if (self.context) |context| {
+            if (context.*.*.metadata) |d| {
+                std.debug.print("test", .{});
+                return Iterator{ .dictionary = d };
+            }
 
-    pub fn iterate(self: *Metadata) MetadataError!Iterator {
-        // if (self.context.metadata) |metadata| {
-        //     std.debug.print("in the capture (iterator) {any}\n", .{metadata});
-        //     return Iterator{ .dictionary = metadata };
-        // }
-        std.debug.print("data = {any}\n", .{self.context});
-
+            return MetadataError.NoMetadata;
+        }
         return MetadataError.NoMetadata;
     }
 
@@ -55,13 +53,14 @@ pub const MetadataError = error{
     NoMetadata,
 };
 
-// TODO: allocator.create
 pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
     const ptr = try allocator.create(*c.AVFormatContext);
-    var duped_path = try allocator.dupe(u8, path);
-    _ = &duped_path;
 
     ptr.* = c.avformat_alloc_context();
+
+    if (@as(?*c.AVFormatContext, ptr.*) == null) {
+        return MetadataError.NoMetadata;
+    }
 
     if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
         return MetadataError.CannotOpenInput;
@@ -71,5 +70,5 @@ pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         return MetadataError.StreamInfoNotFound;
     }
 
-    return try Metadata.init(ptr);
+    return Metadata{ .context = ptr };
 }
