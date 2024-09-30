@@ -6,16 +6,16 @@ pub const SortMethods = enum {
     greater,
 };
 
-pub fn chooseSort(list: std.ArrayList(*playlists.Playlist), sortType: SortMethods) !void {
+pub fn sort(list: std.ArrayList(*playlists.Playlist), sort_type: SortMethods) !void {
     const list_items = list.items[0..];
-    try switch (sortType) {
+    try switch (sort_type) {
         .less => sort(list_items, lessThan),
         .greater => sort(list_items, greaterThan),
     };
 }
 
-fn sort(items: []*playlists.Playlist, sortMethod: fn (_: void, lhs: *playlists.Playlist, rhs: *playlists.Playlist) bool) !void {
-    std.mem.sort(*playlists.Playlist, items, {}, sortMethod);
+fn sortPlaylist(items: []*playlists.Playlist, sort_method: fn (_: void, lhs: *playlists.Playlist, rhs: *playlists.Playlist) bool) !void {
+    std.mem.sort(*playlists.Playlist, items, {}, sort_method);
 }
 
 fn lessThan(_: void, lhs: *playlists.Playlist, rhs: *playlists.Playlist) bool {

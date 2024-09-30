@@ -51,7 +51,7 @@ pub fn main() !void {
     };
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
-    try sorting.chooseSort(music, sorting.SortMethods.greater);
+    try sorting.sort(music, sorting.SortMethods.greater);
     defer {
         for (music.items) |item| {
             item.deinit();
