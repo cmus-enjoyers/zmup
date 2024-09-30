@@ -52,7 +52,7 @@ pub fn main() !void {
     };
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
-    // try sorting.sort(music);
+    try sorting.sort(music, sorting.SortTypes.greater);
     defer {
         for (music.items) |item| {
             item.deinit();
