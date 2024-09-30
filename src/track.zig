@@ -11,7 +11,7 @@ pub const Track = struct {
         const duped = try allocator.dupe(u8, path);
         const track_metadata = try allocator.create(metadata.Metadata);
 
-        track_metadata.* = metadata.getMetadata(allocator, duped) catch {
+        track_metadata.* = metadata.Metadata.init(allocator, duped) catch {
             return Track{
                 .path = duped,
                 .name = std.fs.path.stem(duped),

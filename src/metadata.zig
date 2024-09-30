@@ -25,9 +25,35 @@ const Iterator = struct {
     }
 };
 
+pub const MetadataError = error{
+    CannotOpenInput,
+    ContextIsNull,
+    StreamInfoNotFound,
+    NoMetadata,
+};
+
 pub const Metadata = struct {
     context: ?**c.AVFormatContext = null,
     allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
+        const ptr = try allocator.create(*c.AVFormatContext);
+
+        ptr.* = c.avformat_alloc_context();
+
+        if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
+            return MetadataError.CannotOpenInput;
+        }
+
+        if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
+            return MetadataError.StreamInfoNotFound;
+        }
+
+        return Metadata{
+            .context = ptr,
+            .allocator = allocator,
+        };
+    }
 
     pub fn iterate(self: Metadata) MetadataError!Iterator {
         if (self.context) |context| {
@@ -43,32 +69,8 @@ pub const Metadata = struct {
     }
 
     pub fn deinit(self: *Metadata) void {
+        self.allocator.free(self.context);
+
         c.avformat_close_input(@ptrCast(&self.context));
     }
 };
-
-pub const MetadataError = error{
-    CannotOpenInput,
-    ContextIsNull,
-    StreamInfoNotFound,
-    NoMetadata,
-};
-
-pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
-    const ptr = try allocator.create(*c.AVFormatContext);
-
-    ptr.* = c.avformat_alloc_context();
-
-    if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
-        return MetadataError.CannotOpenInput;
-    }
-
-    if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
-        return MetadataError.StreamInfoNotFound;
-    }
-
-    return Metadata{
-        .context = ptr,
-        .allocator = allocator,
-    };
-}

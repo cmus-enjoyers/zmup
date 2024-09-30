@@ -54,9 +54,9 @@ pub fn main() !void {
     // defer text_input.deinit();
     //
     // try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
-    //
-    const home = std.posix.getenv("HOME");
+
     c.av_log_set_level(c.AV_LOG_QUIET);
+    const home = std.posix.getenv("HOME");
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
