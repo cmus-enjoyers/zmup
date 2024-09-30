@@ -6,6 +6,7 @@ const sorting = @import("sorting.zig");
 const track = @import("track.zig");
 const metadata = @import("metadata.zig");
 const c = @import("root.zig").c;
+
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -69,32 +70,20 @@ pub fn main() !void {
         music.deinit();
     }
 
-    const t = try track.Track.init(allocator, "/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
-    defer t.deinit();
+    for (music.items) |item| {
+        const content = item.load() catch continue;
 
-    if (t.metadata) |mdata| {
-        try testing(mdata);
+        for (content) |track| {
+            if (track.metadata) |value| {
+                var iterator = value.iterate() catch continue;
+
+                while (try iterator.next()) |x| {
+                    std.debug.print("{s} {s}\n", .{ x.key, x.value });
+                }
+            }
+        }
     }
-    //
-    // for (music.items) |item| {
-    //     var content = item.load() catch continue;
-    //     _ = &content;
-    //
-    //     for (content) |track| {
-    //         if (track.metadata) |value| {
-    //             var iterator = value.iterate() catch {
-    //                 std.debug.print("continuing\n", .{});
-    //                 continue;
-    //             };
-    //             while (try iterator.next()) |x| {
-    //                 std.debug.print("{any}\n", .{x});
-    //             }
-    //             _ = &iterator;
-    //             continue;
-    //         }
-    //     }
-    // }
-    //
+
     // while (true) {
     //     const event = loop.nextEvent();
     //
