@@ -31,9 +31,9 @@ pub const Track = struct {
     pub fn deinit(self: Track) void {
         self.allocator.free(self.path);
 
-        if (self.metadata) |value| {
-            self.allocator.destroy(value);
-            value.deinit();
+        if (self.metadata) |metadata| {
+            self.allocator.destroy(metadata);
+            metadata.deinit();
         }
     }
 };
