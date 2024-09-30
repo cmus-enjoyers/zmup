@@ -46,9 +46,7 @@ pub fn main() !void {
     //
     const home = std.posix.getenv("HOME");
 
-    var playlist_paths: [2][]const u8 = .{
-        try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" }),
-    };
+    var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
     try sorting.sort(music, sorting.SortMethods.greater);
