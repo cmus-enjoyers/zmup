@@ -4,6 +4,7 @@ const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
 const track = @import("track.zig");
+const Track = @import("track.zig").Track;
 const metadata = @import("metadata.zig");
 const c = @import("root.zig").c;
 
@@ -63,22 +64,28 @@ pub fn main() !void {
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
     try sorting.sort(music, sorting.SortMethods.greater);
     defer {
-        for (music.items) |item| {
-            item.deinit();
-            allocator.destroy(item);
+        std.debug.print("\n\n\n\ndefer", .{});
+        for (music.items) |track| {
+            track.deinit();
+            allocator.destroy(track);
         }
         music.deinit();
     }
 
     for (music.items) |item| {
-        const content = item.load() catch continue;
+        const content = try item.load();
+        if (content.len == 0) {
+            continue;
+        }
+
+        std.debug.print("{s}\n", .{content[0].name});
 
         for (content) |track| {
             if (track.metadata) |value| {
-                var iterator = value.iterate() catch continue;
+                var iterator = try value.iterate();
 
                 while (try iterator.next()) |x| {
-                    std.debug.print("{s} {s}\n", .{ x.key, x.value });
+                    _ = x;
                 }
             }
         }
