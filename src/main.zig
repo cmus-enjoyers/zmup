@@ -74,19 +74,14 @@ pub fn main() !void {
 
     for (music.items) |item| {
         const content = try item.load();
+
         if (content.len == 0) {
             continue;
         }
 
-        std.debug.print("{s}\n", .{content[0].name});
-
         for (content) |track| {
             if (track.metadata) |value| {
-                var iterator = try value.iterate();
-
-                while (try iterator.next()) |x| {
-                    _ = x;
-                }
+                std.debug.print("track duration in s: {}\n", .{value.duration});
             }
         }
     }

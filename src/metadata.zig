@@ -35,6 +35,7 @@ pub const MetadataError = error{
 pub const Metadata = struct {
     context: ?**c.AVFormatContext = null,
     allocator: std.mem.Allocator,
+    duration: i64,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         const ptr = try allocator.create(*c.AVFormatContext);
@@ -52,6 +53,7 @@ pub const Metadata = struct {
         return Metadata{
             .context = ptr,
             .allocator = allocator,
+            .duration = ptr.*.duration,
         };
     }
 
