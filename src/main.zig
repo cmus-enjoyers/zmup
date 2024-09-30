@@ -2,6 +2,7 @@ const std = @import("std");
 const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
+const sorting = @import("sorting.zig");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -17,7 +18,7 @@ const Event = union(enum) {
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const allocator = arena.allocator();
+    var allocator = arena.allocator();
 
     // var tty = try vaxis.Tty.init();
     // defer tty.deinit();
@@ -47,10 +48,11 @@ pub fn main() !void {
 
     var playlist_paths: [2][]const u8 = .{
         try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" }),
-        "/home/vktrenokh/.config/cmus/xplaylists/",
+        "/home/cosmo/.config/cmus/xplaylists/",
     };
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
+    // try sorting.sort(music);
     defer {
         for (music.items) |item| {
             item.deinit();
