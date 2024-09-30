@@ -32,8 +32,8 @@ pub const Track = struct {
         self.allocator.free(self.path);
 
         if (self.metadata) |metadata| {
-            self.allocator.destroy(metadata);
             metadata.deinit();
+            self.allocator.destroy(metadata);
         }
     }
 };
