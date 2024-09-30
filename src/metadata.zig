@@ -12,7 +12,7 @@ const Iterator = struct {
     tag: ?*c.AVDictionaryEntry = null,
 
     pub fn next(self: *Iterator) !?MetadataPair {
-        self.tag = c.av_dict_get(null, "", null, c.AV_DICT_IGNORE_SUFFIX);
+        self.tag = c.av_dict_get(self.dictionary, "", self.tag, c.AV_DICT_IGNORE_SUFFIX);
 
         if (self.tag) |value| {
             return MetadataPair{
@@ -31,20 +31,19 @@ pub const Metadata = struct {
 
     pub fn iterate(self: Metadata) MetadataError!Iterator {
         if (self.context) |context| {
-            if (context.*.*.metadata) |d| {
-                std.debug.print("test", .{});
+            if (context.*.metadata) |d| {
                 return Iterator{ .dictionary = d, .allocator = self.allocator };
             }
 
+            std.debug.print("no metadata in context.*.*.metadata {any}", .{context.*.metadata == null});
             return MetadataError.NoMetadata;
         }
+        std.debug.print("no metadata in self.context", .{});
         return MetadataError.NoMetadata;
     }
 
     pub fn deinit(self: *Metadata) void {
-        _ = self;
-        std.debug.print("x", .{});
-        // c.avformat_close_input(@ptrCast(&self.context));
+        c.avformat_close_input(@ptrCast(&self.context));
     }
 };
 
@@ -60,22 +59,16 @@ pub fn getMetadata(allocator: std.mem.Allocator, path: []const u8) !Metadata {
 
     ptr.* = c.avformat_alloc_context();
 
-    var context: ?*c.AVFormatContext = null;
-
-    if (c.avformat_open_input(@ptrCast(&context), @ptrCast(path), null, null) != 0) {
+    if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
         return MetadataError.CannotOpenInput;
     }
 
-    if (c.avformat_find_stream_info(@ptrCast(context), null) != 0) {
+    if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
         return MetadataError.StreamInfoNotFound;
     }
 
-    if (context) |*value| {
-        return Metadata{
-            .context = value,
-            .allocator = allocator,
-        };
-    }
-
-    return MetadataError.ContextIsNull;
+    return Metadata{
+        .context = ptr,
+        .allocator = allocator,
+    };
 }

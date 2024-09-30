@@ -2,8 +2,6 @@ const std = @import("std");
 const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
-const sorting = @import("sorting.zig");
-const track = @import("track.zig");
 const metadata = @import("metadata.zig");
 const c = @import("root.zig").c;
 const Cell = vaxis.Cell;
@@ -18,13 +16,6 @@ const Event = union(enum) {
 
 // TODO: add zmup (github.com/cmus-enjoyers/sneaky-cmup-10) and some cli things
 // TODO: man pages?!?!?!?!
-
-pub fn testing(data: *metadata.Metadata) !void {
-    var iterator = try data.iterate();
-    while (try iterator.next()) |value| {
-        std.debug.print("{s} - {s}\n", .{ value.key, value.value });
-    }
-}
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -57,10 +48,12 @@ pub fn main() !void {
     const home = std.posix.getenv("HOME");
     c.av_log_set_level(c.AV_LOG_QUIET);
 
-    var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
+    var playlist_paths: [2][]const u8 = .{
+        try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" }),
+        "/home/vktrenokh/.config/cmus/xplaylists/",
+    };
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
-    try sorting.sort(music, sorting.SortMethods.greater);
     defer {
         for (music.items) |item| {
             item.deinit();
@@ -68,13 +61,7 @@ pub fn main() !void {
         }
         music.deinit();
     }
-
-    const t = try track.Track.init(allocator, "/home/vktrenokh/Music/jump/ridge-racer-type-4/01 Urban Fragments.flac");
-    defer t.deinit();
-
-    if (t.metadata) |mdata| {
-        try testing(mdata);
-    }
+    const data = try metadata.getMetadata(allocator, "/home/vktrenokh/Music/jump/ridge-racer-type-4/17 Move Me.flac")
     //
     // for (music.items) |item| {
     //     var content = item.load() catch continue;
