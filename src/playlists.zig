@@ -11,7 +11,10 @@ pub const Playlist = struct {
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
 
-    pub fn init(allocator: std.mem.Allocator, path: []const u8) !Playlist {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        path: []const u8,
+    ) !Playlist {
         const duped = try allocator.dupe(u8, path);
 
         return Playlist{
@@ -43,8 +46,7 @@ pub const Playlist = struct {
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
 
-        const data =
-            try file.readToEndAlloc(self.allocator, try file.getEndPos());
+        const data = try file.readToEndAlloc(self.allocator, try file.getEndPos());
 
         var iterator = std.mem.splitSequence(
             u8,
@@ -111,7 +113,8 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
 
         switch (stat.kind) {
             .file => appendPlaylist(&list, path) catch continue,
-            else => appendPlaylistCollection(&list, path) catch continue,
+            .directory => appendPlaylistCollection(&list, path) catch continue,
+            else => {},
         }
     }
 

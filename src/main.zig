@@ -20,14 +20,6 @@ const Event = union(enum) {
 
 // TODO: add zmup (github.com/cmus-enjoyers/sneaky-cmup-10) and some cli things
 // TODO: man pages?!?!?!?!
-
-pub fn testing(data: *metadata.Metadata) !void {
-    var iterator = try data.iterate();
-    while (try iterator.next()) |value| {
-        std.debug.print("{s} - {s}\n", .{ value.key, value.value });
-    }
-}
-
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
@@ -64,7 +56,6 @@ pub fn main() !void {
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
     try sorting.sort(music, sorting.SortMethods.greater);
     defer {
-        std.debug.print("\n\n\n\ndefer", .{});
         for (music.items) |track| {
             track.deinit();
             allocator.destroy(track);
@@ -79,13 +70,17 @@ pub fn main() !void {
             continue;
         }
 
+        std.debug.print("{s} len: {}\n{s}\n", .{ item.name, content.len, content[0].name });
         for (content) |track| {
+            // std.debug.print("{s} - {}\n", .{ track.path, std.mem.eql(u8, track.name, x) });
+
             if (track.metadata) |value| {
-                std.debug.print("track duration in s: {}\n", .{value.duration});
+                _ = value;
+                // std.debug.print("track duration in s: {}\n", .{value.duration});
             }
         }
     }
-
+    //
     // while (true) {
     //     const event = loop.nextEvent();
     //
