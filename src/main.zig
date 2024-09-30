@@ -18,7 +18,7 @@ const Event = union(enum) {
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    var allocator = arena.allocator();
+    const allocator = arena.allocator();
 
     // var tty = try vaxis.Tty.init();
     // defer tty.deinit();
@@ -48,11 +48,10 @@ pub fn main() !void {
 
     var playlist_paths: [2][]const u8 = .{
         try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" }),
-        "/home/cosmo/.config/cmus/xplaylists/",
     };
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
-    try sorting.sort(music, sorting.SortTypes.greater);
+    try sorting.chooseSort(music, sorting.SortMethods.greater);
     defer {
         for (music.items) |item| {
             item.deinit();
