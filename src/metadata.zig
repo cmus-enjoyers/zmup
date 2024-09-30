@@ -56,15 +56,9 @@ pub const Metadata = struct {
     }
 
     pub fn iterate(self: Metadata) MetadataError!Iterator {
-        if (self.context) |context| {
-            if (context.*.metadata) |d| {
-                return Iterator{ .dictionary = d, .allocator = self.allocator };
-            }
-
-            std.debug.print("no metadata in context.*.*.metadata {any}", .{context.*.metadata == null});
-            return MetadataError.NoMetadata;
+        if (self.context.?.*.metadata) |d| {
+            return Iterator{ .dictionary = d, .allocator = self.allocator };
         }
-        std.debug.print("no metadata in self.context", .{});
         return MetadataError.NoMetadata;
     }
 

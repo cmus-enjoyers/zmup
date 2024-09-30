@@ -1,17 +1,17 @@
 const std = @import("std");
-const metadata = @import("metadata.zig");
+const Metadata = @import("metadata.zig").Metadata;
 
 pub const Track = struct {
-    metadata: ?*metadata.Metadata = null,
+    metadata: ?*Metadata = null,
     allocator: std.mem.Allocator,
     path: []const u8,
     name: []const u8,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Track {
         const duped = try allocator.dupe(u8, path);
-        const track_metadata = try allocator.create(metadata.Metadata);
+        const track_metadata = try allocator.create(Metadata);
 
-        track_metadata.* = metadata.Metadata.init(allocator, duped) catch {
+        track_metadata.* = Metadata.init(allocator, duped) catch {
             return Track{
                 .path = duped,
                 .name = std.fs.path.stem(duped),
