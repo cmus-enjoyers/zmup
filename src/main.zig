@@ -84,7 +84,7 @@ pub fn main() !void {
             }
         }
     }
-    //
+
     // while (true) {
     //     const event = loop.nextEvent();
     //
