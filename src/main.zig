@@ -7,6 +7,7 @@ const track = @import("track.zig");
 const Track = @import("track.zig").Track;
 const metadata = @import("metadata.zig");
 const c = @import("root.zig").c;
+const pretty = @import("pretty.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -74,7 +75,7 @@ pub fn main() !void {
 
         for (content) |track| {
             if (track.metadata) |metadata| {
-                std.debug.print("  {s} duration {}\n", .{ track.name, metadata.duration });
+                std.debug.print("  {s} duration {}\n", .{ track.name, pretty.avTimeToSeconds(metadata.context.?) });
             }
         }
     }
