@@ -65,13 +65,18 @@ pub fn main() !void {
     }
 
     for (music.items) |item| {
+        const start = try std.time.Instant.now();
+
         const content = try item.load();
+
+        const end = try std.time.Instant.now();
+        const elapsed: f64 = @floatFromInt(end.since(start));
+
+        std.debug.print("{s} took {d:.3}ms\n", .{ item.name, elapsed / std.time.ns_per_ms });
 
         if (content.len == 0) {
             continue;
         }
-
-        std.debug.print("{s}\n", .{item.name});
 
         for (content) |track| {
             if (track.metadata) |metadata| {

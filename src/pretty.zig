@@ -9,7 +9,7 @@ pub inline fn avTimeToSeconds(context: **c.AVFormatContext) i64 {
 pub fn avTimeToString(allocator: std.mem.Allocator, context: **c.AVFormatContext) ![]const u8 {
     const total_seconds = avTimeToSeconds(context);
 
-    return try std.fmt.allocPrint(allocator, "{d}:{d}", .{
+    return try std.fmt.allocPrint(allocator, "{d}:{d:002}", .{
         @divTrunc(total_seconds, 60),
         @mod(total_seconds, 60),
     });
