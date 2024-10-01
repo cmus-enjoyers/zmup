@@ -8,20 +8,19 @@ pub const Track = struct {
     name: []const u8,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Track {
-        const duped = try allocator.dupe(u8, path);
         const track_metadata = try allocator.create(Metadata);
-        const stem = std.fs.path.stem(duped);
+        const stem = std.fs.path.stem(path);
 
-        track_metadata.* = Metadata.init(allocator, duped) catch {
+        track_metadata.* = Metadata.init(allocator, path) catch {
             return Track{
-                .path = duped,
+                .path = path,
                 .name = stem,
                 .allocator = allocator,
             };
         };
 
         return Track{
-            .path = duped,
+            .path = path,
             .name = stem,
             .allocator = allocator,
             .metadata = track_metadata,
@@ -29,8 +28,8 @@ pub const Track = struct {
     }
 
     pub fn deinit(self: Track) void {
-        self.allocator.free(self.path);
-
+        // self.allocator.free(self.path);
+        //
         if (self.metadata) |metadata| {
             metadata.deinit();
             self.allocator.destroy(metadata);

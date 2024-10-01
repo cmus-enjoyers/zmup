@@ -59,9 +59,11 @@ pub const Playlist = struct {
                 continue;
             }
 
-            var track = try Track.init(self.allocator, item);
+            const track_ptr = try self.allocator.create(Track);
 
-            try content.append(&track);
+            track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, item));
+
+            try content.append(track_ptr);
         }
 
         self.content = content;
