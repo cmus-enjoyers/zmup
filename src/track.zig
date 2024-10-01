@@ -10,7 +10,7 @@ pub const Track = struct {
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Track {
         const track_metadata = try allocator.create(Metadata);
         const stem = std.fs.path.stem(path);
-        const duped_path = allocator.dupe(u8, path);
+        const duped_path = try allocator.dupe(u8, path);
 
         track_metadata.* = Metadata.init(allocator, path) catch {
             return Track{
@@ -37,3 +37,10 @@ pub const Track = struct {
         }
     }
 };
+
+test "Track" {
+    const track = try Track.init(std.testing.allocator, "/some/path");
+    defer track.deinit();
+
+    try std.testing.expect(std.mem.eql(u8, track.name, "path"));
+}

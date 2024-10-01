@@ -70,10 +70,12 @@ pub fn main() !void {
             continue;
         }
 
-        for (content) |track| {
-            // std.debug.print("{s} - {}\n", .{ track.path, std.mem.eql(u8, track.name, x) });
+        std.debug.print("{s}\n", .{item.name});
 
-            std.debug.print("{s}\n", .{track.path});
+        for (content) |track| {
+            if (track.metadata) |metadata| {
+                std.debug.print("  {s} duration {}\n", .{ track.name, metadata.duration });
+            }
         }
     }
     //
