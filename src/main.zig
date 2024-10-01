@@ -75,7 +75,7 @@ pub fn main() !void {
 
         for (content) |track| {
             if (track.metadata) |metadata| {
-                std.debug.print("  {s} duration {}\n", .{ track.name, pretty.avTimeToSeconds(metadata.context.?) });
+                std.debug.print("  {s} duration {s}\n", .{ track.name, try pretty.avTimeToString(allocator, metadata.context.?) });
             }
         }
     }
