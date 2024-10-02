@@ -1,4 +1,5 @@
 const c = @import("root.zig").c;
+const ffmpeg = @import("ffmpeg.zig");
 const std = @import("std");
 
 const MetadataPair = struct {
@@ -39,13 +40,14 @@ pub const Metadata = struct {
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         const ptr = try allocator.create(*c.AVFormatContext);
+        errdefer {
+            c.avformat_close_input(@ptrCast(&ptr));
+            allocator.destroy(ptr);
+        }
 
         ptr.* = c.avformat_alloc_context();
 
-        if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
-            // TODO: fix memory leaks here
-            return MetadataError.CannotOpenInput;
-        }
+        try ffmpeg.avFormatOpenInput(@ptrCast(ptr), @ptrCast(path), null, null);
 
         if (c.avformat_find_stream_info(@ptrCast(ptr.*), null) != 0) {
             return MetadataError.StreamInfoNotFound;
@@ -66,7 +68,7 @@ pub const Metadata = struct {
     }
 
     pub fn deinit(self: *Metadata) void {
-        self.allocator.free(self.context);
+        self.allocator.destroy(self.context);
 
         c.avformat_close_input(@ptrCast(&self.context));
     }
