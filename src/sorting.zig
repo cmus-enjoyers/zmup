@@ -8,13 +8,14 @@ pub const SortMethods = enum {
 
 pub fn sort(list: std.ArrayList(*playlists.Playlist), sort_type: SortMethods) !void {
     const list_items = list.items[0..];
-    try switch (sort_type) {
+
+    switch (sort_type) {
         .less => sortPlaylist(list_items, lessThan),
         .greater => sortPlaylist(list_items, greaterThan),
-    };
+    }
 }
 
-fn sortPlaylist(items: []*playlists.Playlist, sort_method: fn (_: void, lhs: *playlists.Playlist, rhs: *playlists.Playlist) bool) !void {
+fn sortPlaylist(items: []*playlists.Playlist, sort_method: fn (_: void, lhs: *playlists.Playlist, rhs: *playlists.Playlist) bool) void {
     std.mem.sort(*playlists.Playlist, items, {}, sort_method);
 }
 
