@@ -5,7 +5,7 @@ const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
 const Track = @import("track.zig").Track;
 const c = @import("root.zig").c;
-const pretty = @import("pretty.zig");
+const time = @import("time.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -73,7 +73,7 @@ pub fn main() !void {
         std.debug.print("{s} took {d:.3}ms with duration {s}\n", .{
             item.name,
             elapsed / std.time.ns_per_ms,
-            try pretty.avTimeToString(allocator, item.duration),
+            try time.avTimeToString(allocator, item.duration),
         });
 
         if (content.len == 0) {

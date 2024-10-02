@@ -47,6 +47,7 @@ pub fn avFormatOpenInput(context: [*c][*c]c.AVFormatContext, url: [*c]const u8, 
         else => {},
     };
 }
+
 pub fn avFormatFindStreamInfo(context: [*c]c.AVFormatContext, options: [*c]?*c.AVDictionary) !void {
     return switch (c.avformat_find_stream_info(context, options)) {
         -12 => AVError.NoMem,
