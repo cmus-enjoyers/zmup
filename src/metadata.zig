@@ -11,7 +11,7 @@ const Iterator = struct {
     dictionary: *c.AVDictionary,
     tag: ?*c.AVDictionaryEntry = null,
 
-    pub fn next(self: *Iterator) !?MetadataPair {
+    pub fn next(self: *Iterator) ?MetadataPair {
         self.tag = c.av_dict_get(self.dictionary, "", self.tag, c.AV_DICT_IGNORE_SUFFIX);
 
         if (self.tag) |value| {
