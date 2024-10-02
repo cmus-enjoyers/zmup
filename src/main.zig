@@ -3,9 +3,7 @@ const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
-const track = @import("track.zig");
 const Track = @import("track.zig").Track;
-const metadata = @import("metadata.zig");
 const c = @import("root.zig").c;
 const pretty = @import("pretty.zig");
 
