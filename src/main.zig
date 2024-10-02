@@ -6,6 +6,8 @@ const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
 
+const alsa = @import("sysaudio/alsa.zig");
+
 const Event = union(enum) {
     key_press: vaxis.Key,
     winsize: vaxis.Winsize,
@@ -18,6 +20,8 @@ const Event = union(enum) {
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
+
+    try alsa.init();
 
     // var tty = try vaxis.Tty.init();
     // defer tty.deinit();
@@ -59,9 +63,10 @@ pub fn main() !void {
         music.deinit();
     }
 
-    for (music.items) |item| {
-        std.debug.print("{s}\n", .{item.name});
-    }
+    // for (music.items) |item| {
+    //     std.debug.print("{s}\n", .{item.name});
+    // }
+
     //
     // while (true) {
     //     const event = loop.nextEvent();
