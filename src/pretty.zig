@@ -1,23 +1,37 @@
 const c = @import("root.zig").c;
 const std = @import("std");
 
-pub inline fn avTimeToSeconds(context: **c.AVFormatContext) i64 {
-    return @divFloor(context.*.duration, c.AV_TIME_BASE);
+const time_segment_formatter = "{d:0<2}";
+
+pub fn avTimeToSeconds(duration: i64) i64 {
+    return @divFloor(duration, c.AV_TIME_BASE);
+}
+
+pub fn avContextToSeconds(context: **c.AVFormatContext) i64 {
+    return avTimeToSeconds(context.*.duration);
+}
+
+pub fn formatTime(allocator: std.mem.Allocator, seconds: i64) ![]const u8 {
+    const hours: i64 = @divFloor(seconds, 3600);
+    const minutes: i64 = @divFloor(@mod(seconds, 3600), 60);
+    const secs: i64 = @mod(seconds, 60);
+
+    if (hours > 0) {
+        return std.fmt.allocPrint(
+            allocator,
+            time_segment_formatter ++ ":" ++ time_segment_formatter ++ ":" ++ time_segment_formatter,
+            .{ hours, minutes, secs },
+        );
+    } else {
+        return std.fmt.allocPrint(
+            allocator,
+            time_segment_formatter ++ ":" ++ time_segment_formatter,
+            .{ minutes, secs },
+        );
+    }
 }
 
 /// Should be free'd after use
 pub fn avTimeToString(allocator: std.mem.Allocator, context: **c.AVFormatContext) ![]const u8 {
-    const total_seconds = avTimeToSeconds(context);
-
-    const str = try std.fmt.allocPrint(allocator, "{:0>3}:{:0>3}", .{
-        @divTrunc(total_seconds, 60),
-        @mod(total_seconds, 60),
-    });
-    defer allocator.free(str);
-
-    const x: []u8 = try allocator.dupe(u8, str);
-
-    _ = std.mem.replace(u8, str, "+", "", x);
-
-    return x[0..5];
+    return formatTime(allocator, avContextToSeconds(context));
 }

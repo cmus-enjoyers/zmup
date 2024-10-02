@@ -72,7 +72,11 @@ pub fn main() !void {
         const end = try std.time.Instant.now();
         const elapsed: f64 = @floatFromInt(end.since(start));
 
-        std.debug.print("{s} took {d:.3}ms\n", .{ item.name, elapsed / std.time.ns_per_ms });
+        std.debug.print("{s} took {d:.3}ms with duration {s}\n", .{
+            item.name,
+            elapsed / std.time.ns_per_ms,
+            try pretty.formatTime(allocator, pretty.avTimeToSeconds(item.duration)),
+        });
 
         if (content.len == 0) {
             continue;
@@ -80,7 +84,8 @@ pub fn main() !void {
 
         for (content) |track| {
             if (track.metadata) |metadata| {
-                std.debug.print("  {s} duration {s}\n", .{ track.name, try pretty.avTimeToString(allocator, metadata.context.?) });
+                _ = metadata;
+                // std.debug.print("  {s} duration {s}\n", .{ track.name, try pretty.avTimeToString(allocator, metadata.context.?) });
             }
         }
     }

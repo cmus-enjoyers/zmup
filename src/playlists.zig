@@ -10,6 +10,8 @@ pub const Playlist = struct {
     content: ?std.ArrayList(*Track) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
+    /// 0 means playlist is not loaded.
+    duration: i64 = 0,
 
     pub fn init(
         allocator: std.mem.Allocator,
@@ -62,6 +64,10 @@ pub const Playlist = struct {
             const track_ptr = try self.allocator.create(Track);
 
             track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, item));
+
+            if (track_ptr.metadata) |metadata| {
+                self.duration += metadata.duration;
+            }
 
             try content.append(track_ptr);
         }
