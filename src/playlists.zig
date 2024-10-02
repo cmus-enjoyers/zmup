@@ -1,15 +1,22 @@
 const std = @import("std");
+const tracks = @import("track.zig");
+const Track = tracks.Track;
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
 
 pub const Playlist = struct {
     path: []const u8,
     name: []const u8,
-    content: ?std.ArrayList([]const u8) = null,
+    content: ?std.ArrayList(*Track) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
+    /// 0 means playlist is not loaded.
+    duration: i64 = 0,
 
-    pub fn init(allocator: std.mem.Allocator, path: []const u8) !Playlist {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        path: []const u8,
+    ) !Playlist {
         const duped = try allocator.dupe(u8, path);
 
         return Playlist{
@@ -31,18 +38,17 @@ pub const Playlist = struct {
         self.allocator.free(self.path);
     }
 
-    pub fn load(self: *Playlist) ![][]const u8 {
+    pub fn load(self: *Playlist) ![]*Track {
         if (self.content) |content| {
             return content.items;
         }
 
-        var content = std.ArrayList([]const u8).init(self.allocator);
+        var content = std.ArrayList(*Track).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
 
-        const data =
-            try file.readToEndAlloc(self.allocator, try file.getEndPos());
+        const data = try file.readToEndAlloc(self.allocator, try file.getEndPos());
 
         var iterator = std.mem.splitSequence(
             u8,
@@ -55,7 +61,15 @@ pub const Playlist = struct {
                 continue;
             }
 
-            try content.append(item);
+            const track_ptr = try self.allocator.create(Track);
+
+            track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, item));
+
+            if (track_ptr.metadata) |metadata| {
+                self.duration += metadata.duration;
+            }
+
+            try content.append(track_ptr);
         }
 
         self.content = content;
@@ -107,7 +121,8 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
 
         switch (stat.kind) {
             .file => appendPlaylist(&list, path) catch continue,
-            else => appendPlaylistCollection(&list, path) catch continue,
+            .directory => appendPlaylistCollection(&list, path) catch continue,
+            else => {},
         }
     }
 

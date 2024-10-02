@@ -3,6 +3,11 @@ const vaxis = @import("vaxis");
 const ui = @import("ui.zig");
 const playlists = @import("playlists.zig");
 const sorting = @import("sorting.zig");
+const Track = @import("track.zig").Track;
+const c = @import("root.zig").c;
+const time = @import("time.zig");
+const ffmpeg = @import("ffmpeg.zig");
+
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
@@ -15,7 +20,6 @@ const Event = union(enum) {
 
 // TODO: add zmup (github.com/cmus-enjoyers/sneaky-cmup-10) and some cli things
 // TODO: man pages?!?!?!?!
-
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
@@ -43,7 +47,8 @@ pub fn main() !void {
     // defer text_input.deinit();
     //
     // try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
-    //
+
+    c.av_log_set_level(c.AV_LOG_QUIET);
     const home = std.posix.getenv("HOME");
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
@@ -51,17 +56,39 @@ pub fn main() !void {
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
     try sorting.sort(music, sorting.SortMethods.greater);
     defer {
-        for (music.items) |item| {
-            item.deinit();
-            allocator.destroy(item);
+        for (music.items) |track| {
+            track.deinit();
+            allocator.destroy(track);
         }
         music.deinit();
     }
 
     for (music.items) |item| {
-        std.debug.print("{s}\n", .{item.name});
+        const start = try std.time.Instant.now();
+
+        const content = try item.load();
+
+        const end = try std.time.Instant.now();
+        const elapsed: f64 = @floatFromInt(end.since(start));
+
+        std.debug.print("{s} took {d:.3}ms with duration {s}\n", .{
+            item.name,
+            elapsed / std.time.ns_per_ms,
+            try time.avTimeToString(allocator, item.duration),
+        });
+
+        if (content.len == 0) {
+            continue;
+        }
+
+        for (content) |track| {
+            if (track.metadata) |metadata| {
+                _ = metadata;
+                // std.debug.print("  {s} duration {s}\n", .{ track.name, try pretty.avTimeToString(allocator, metadata.context.?) });
+            }
+        }
     }
-    //
+
     // while (true) {
     //     const event = loop.nextEvent();
     //
