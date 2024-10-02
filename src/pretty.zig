@@ -12,8 +12,8 @@ pub fn avContextToSeconds(context: **c.AVFormatContext) i64 {
 }
 
 pub fn formatTime(allocator: std.mem.Allocator, seconds: i64) ![]const u8 {
-    const hours: i64 = @divFloor(seconds, 3600);
-    const minutes: i64 = @divFloor(@mod(seconds, 3600), 60);
+    const hours: i64 = @divFloor(seconds, 3_600);
+    const minutes: i64 = @divFloor(@mod(seconds, 3_600), 60);
     const secs: i64 = @mod(seconds, 60);
 
     if (hours > 0) {
