@@ -1,7 +1,7 @@
 const c = @import("root.zig").c;
 const std = @import("std");
 
-const time_segment_formatter = "{d:0<2}";
+const time_segment_formatter = "{:0<2}";
 
 pub fn avTimeToSeconds(duration: i64) i64 {
     return @divFloor(duration, c.AV_TIME_BASE);
@@ -12,9 +12,9 @@ pub fn avContextToSeconds(context: **c.AVFormatContext) i64 {
 }
 
 pub fn formatTime(allocator: std.mem.Allocator, seconds: i64) ![]const u8 {
-    const hours: i64 = @divFloor(seconds, 3_600);
-    const minutes: i64 = @divFloor(@mod(seconds, 3_600), 60);
-    const secs: i64 = @mod(seconds, 60);
+    const hours: u64 = @intCast(@divFloor(seconds, 3_600));
+    const minutes: u64 = @intCast(@divFloor(@mod(seconds, 3_600), 60));
+    const secs: u64 = @intCast(@mod(seconds, 60));
 
     if (hours > 0) {
         return std.fmt.allocPrint(
