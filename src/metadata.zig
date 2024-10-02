@@ -43,6 +43,7 @@ pub const Metadata = struct {
         ptr.* = c.avformat_alloc_context();
 
         if (c.avformat_open_input(@ptrCast(ptr), @ptrCast(path), null, null) != 0) {
+            // TODO: fix memory leaks here
             return MetadataError.CannotOpenInput;
         }
 
