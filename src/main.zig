@@ -6,6 +6,7 @@ const sorting = @import("sorting.zig");
 const Track = @import("track.zig").Track;
 const c = @import("root.zig").c;
 const time = @import("time.zig");
+const ffmpeg = @import("ffmpeg.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
