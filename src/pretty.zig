@@ -32,6 +32,11 @@ pub fn formatTime(allocator: std.mem.Allocator, seconds: i64) ![]const u8 {
 }
 
 /// Should be free'd after use
-pub fn avTimeToString(allocator: std.mem.Allocator, context: **c.AVFormatContext) ![]const u8 {
+pub fn avTimeToString(allocator: std.mem.Allocator, duration: i64) ![]const u8 {
+    return formatTime(allocator, avTimeToSeconds(duration));
+}
+
+/// Should be free'd after use
+pub fn avTimeContextToString(allocator: std.mem.Allocator, context: **c.AVFormatContext) ![]const u8 {
     return formatTime(allocator, avContextToSeconds(context));
 }

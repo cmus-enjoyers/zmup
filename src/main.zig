@@ -75,7 +75,7 @@ pub fn main() !void {
         std.debug.print("{s} took {d:.3}ms with duration {s}\n", .{
             item.name,
             elapsed / std.time.ns_per_ms,
-            try pretty.formatTime(allocator, pretty.avTimeToSeconds(item.duration)),
+            try pretty.avTimeToString(allocator, item.duration),
         });
 
         if (content.len == 0) {
