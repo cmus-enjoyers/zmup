@@ -1,5 +1,5 @@
 const std = @import("std");
-const playlists = @import("playlists.zig");
+const playlists = @import("playlists/playlists.zig");
 
 pub const SortMethods = enum {
     less,
