@@ -38,3 +38,10 @@ pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: 
 
     _ = try win.printSegment(segment, .{ .row_offset = y_offset, .col_offset = x_offset });
 }
+
+pub const white_rgb = .{ 255, 255, 255 };
+
+pub const white_border: vaxis.Window.BorderOptions = .{
+    .style = .{ .fg = .{ .rgb = white_rgb } },
+    .where = .all,
+};

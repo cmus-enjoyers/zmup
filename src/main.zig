@@ -73,12 +73,19 @@ pub fn main() !void {
         }
 
         const win = vx.window();
+
+        const playlists_win_width = win.width / 3;
+
         _ = win.child(.{
-            .border = .{
-                .style = .{ .fg = .{ .rgb = colors.white_rgb } },
-                .where = .all,
-            },
-            .width = .{ .limit = 30 },
+            .border = ui.white_border,
+            .width = .{ .limit = playlists_win_width },
+            .height = .{ .limit = win.height },
+        });
+
+        _ = win.child(.{
+            .border = ui.white_border,
+            .x_off = playlists_win_width,
+            .width = .{ .limit = win.width },
             .height = .{ .limit = win.height },
         });
 
