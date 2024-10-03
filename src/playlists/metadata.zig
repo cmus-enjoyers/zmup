@@ -1,5 +1,5 @@
-const c = @import("root.zig").c;
-const ffmpeg = @import("interop/ffmpeg.zig");
+const c = @import("../root.zig").c;
+const ffmpeg = @import("../interop/ffmpeg.zig");
 const std = @import("std");
 
 const MetadataPair = struct {

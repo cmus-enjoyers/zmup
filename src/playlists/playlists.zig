@@ -1,5 +1,5 @@
 const std = @import("std");
-const tracks = @import("../track.zig");
+const tracks = @import("track.zig");
 const Track = tracks.Track;
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
