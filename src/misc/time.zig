@@ -1,4 +1,4 @@
-const c = @import("root.zig").c;
+const c = @import("../root.zig").c;
 const std = @import("std");
 
 const time_segment_formatter = "{:0<2}";
