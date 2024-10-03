@@ -1,12 +1,10 @@
 const std = @import("std");
 const vaxis = @import("vaxis");
-const ui = @import("ui.zig");
-const playlists = @import("playlists.zig");
-const sorting = @import("sorting.zig");
-const Track = @import("track.zig").Track;
+const ui = @import("misc/ui.zig");
+const playlists = @import("playlists/playlists.zig");
+const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
-const time = @import("time.zig");
-const ffmpeg = @import("ffmpeg.zig");
+const time = @import("misc/time.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
