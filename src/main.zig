@@ -81,8 +81,7 @@ pub fn main() !void {
 
         for (content) |track| {
             if (track.metadata) |metadata| {
-                _ = metadata;
-                // std.debug.print("  {s} duration {s}\n", .{ track.name, try pretty.avTimeToString(allocator, metadata.context.?) });
+                std.debug.print("  {s} duration {s}\n", .{ track.name, try time.avTimeContextToString(allocator, metadata.context.?) });
             }
         }
     }
