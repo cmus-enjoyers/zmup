@@ -1,6 +1,6 @@
 const std = @import("std");
 const vaxis = @import("vaxis");
-const ui = @import("ui.zig");
+const ui = @import("misc/ui.zig");
 const playlists = @import("playlists/playlists.zig");
 const sorting = @import("sorting.zig");
 const Track = @import("track.zig").Track;
