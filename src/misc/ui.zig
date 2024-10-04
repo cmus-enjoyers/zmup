@@ -40,8 +40,23 @@ pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: 
 }
 
 pub const white_rgb = .{ 255, 255, 255 };
+pub const black_rgb = .{ 0, 0, 0 };
 
 pub const white_border: vaxis.Window.BorderOptions = .{
     .style = .{ .fg = .{ .rgb = white_rgb } },
     .where = .all,
 };
+
+pub const selected_item_style: vaxis.Style = .{
+    .italic = true,
+    .bg = .{
+        .rgb = white_rgb,
+    },
+    .fg = .{
+        .rgb = black_rgb,
+    },
+};
+
+pub fn setBlockCursor(win: vaxis.Window) void {
+    win.setCursorShape(vaxis.Cell.CursorShape.block);
+}

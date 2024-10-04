@@ -91,12 +91,7 @@ pub fn main() !void {
             .width = .{ .limit = playlists_win_width },
             .height = .{ .limit = win.height },
         });
-        const playlists_c = playlist_win.child(.{
-            .width = .{ .limit = playlist_win.width },
-            .height = .{ .limit = playlist_win.height },
-        });
-
-        playlist_scroll.draw(playlists_c, .{ .cols = playlists_c.width, .rows = music.items.len });
+        playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
         const music_window = win.child(.{
             .border = ui.white_border,
@@ -104,17 +99,19 @@ pub fn main() !void {
             .width = .{ .limit = win.width },
             .height = .{ .limit = win.height },
         });
+        _ = music_window;
 
         for (music.items, 0..) |item, i| {
-            playlist_scroll.writeCell(playlists_c, 0, i, vaxis.Cell{
+            const style = if (playlist_scroll.scroll.y == i) ui.selected_item_style else undefined;
+
+            playlist_scroll.writeCell(playlist_win, 0, i, vaxis.Cell{
                 .char = .{
                     .width = item.name.len,
                     .grapheme = item.name,
                 },
+                .style = style,
             });
         }
-
-        _ = music_window;
 
         try vx.render(any_writer);
     }
