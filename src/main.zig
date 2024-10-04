@@ -78,6 +78,14 @@ pub fn main() !void {
                 if (key.matches('k', .{})) {
                     playlist_scroll.scroll.y -|= 1;
                 }
+
+                if (key.matches('G', .{})) {
+                    playlist_scroll.scroll.y = std.math.maxInt(usize);
+                }
+
+                if (key.matches('g', .{})) {
+                    playlist_scroll.scroll.y = 0;
+                }
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
@@ -90,7 +98,7 @@ pub fn main() !void {
         playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
         const music_window = ui.drawMusicWin(win, playlist_win.width + 2);
-        _ = music_window;
+        _ = try music_window.printSegment(vaxis.Segment{ .text = ui.logo }, .{});
 
         for (music.items, 0..) |item, i| {
             const style = if (playlist_scroll.scroll.y == i) ui.selected_item_style else undefined;

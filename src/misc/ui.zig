@@ -49,3 +49,6 @@ pub fn drawMusicWin(parent: Window, off: usize) Window {
         .x_off = off,
     });
 }
+
+pub const logo =
+    "Zig Music Player";
