@@ -32,3 +32,11 @@ pub const selected_item_style: vaxis.Style = .{
 pub fn setBlockCursor(win: vaxis.Window) void {
     win.setCursorShape(vaxis.Cell.CursorShape.block);
 }
+
+pub fn drawPlaylistWin(parent: vaxis.Window) vaxis.Window {
+    return parent.child(.{
+        .border = white_border,
+        .width = .{ .limit = parent.width / 3 },
+        .height = .{ .limit = parent.height },
+    });
+}

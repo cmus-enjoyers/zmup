@@ -87,11 +87,8 @@ pub fn main() !void {
 
         const playlists_win_width = win.width / 3;
 
-        const playlist_win = win.child(.{
-            .border = ui.white_border,
-            .width = .{ .limit = playlists_win_width },
-            .height = .{ .limit = win.height },
-        });
+        const playlist_win = ui.drawPlaylistWin(win);
+
         playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
         const music_window = win.child(.{
