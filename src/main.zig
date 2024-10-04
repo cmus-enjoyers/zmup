@@ -10,6 +10,7 @@ const colors = @import("misc/colors.zig");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
+const ScrollView = vaxis.widgets.ScrollView;
 
 const Event = union(enum) {
     key_press: vaxis.Key,
@@ -59,6 +60,8 @@ pub fn main() !void {
         music.deinit();
     }
 
+    var playlist_scroll = ScrollView{};
+
     while (true) {
         const event = loop.nextEvent();
 
@@ -66,6 +69,13 @@ pub fn main() !void {
             .key_press => |key| {
                 if (key.matches('q', .{})) {
                     break;
+                }
+                if (key.matches('j', .{})) {
+                    playlist_scroll.scroll.y +|= 1;
+                }
+
+                if (key.matches('k', .{})) {
+                    playlist_scroll.scroll.y -|= 1;
                 }
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
@@ -76,18 +86,36 @@ pub fn main() !void {
 
         const playlists_win_width = win.width / 3;
 
-        _ = win.child(.{
+        const playlist_win = win.child(.{
             .border = ui.white_border,
             .width = .{ .limit = playlists_win_width },
             .height = .{ .limit = win.height },
         });
+        const playlists_c = playlist_win.child(.{
+            .width = .{ .limit = playlist_win.width },
+            .height = .{ .limit = playlist_win.height },
+        });
 
-        _ = win.child(.{
+        playlist_scroll.draw(playlists_c, .{ .cols = playlists_c.width, .rows = music.items.len });
+
+        const music_window = win.child(.{
             .border = ui.white_border,
             .x_off = playlists_win_width,
             .width = .{ .limit = win.width },
             .height = .{ .limit = win.height },
         });
+
+        for (music.items, 0..) |item, i| {
+            playlist_scroll.writeCell(playlists_c, 0, i, vaxis.Cell{
+                .char = .{
+                    .width = item.name.len,
+                    .grapheme = item.name,
+                },
+            });
+            // _ = try playlists_c.printSegment(vaxis.Segment{ .text = item.name }, .{ .row_offset = i });
+        }
+
+        _ = music_window;
 
         try vx.render(any_writer);
     }
