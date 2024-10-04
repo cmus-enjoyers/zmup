@@ -1,6 +1,8 @@
 const std = @import("std");
 const vaxis = @import("vaxis");
 
+const Window = vaxis.Window;
+
 pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: usize) !void {
     const style: vaxis.Style = .{ .fg = .{
         .rgb = .{255} ** 3,
@@ -33,10 +35,17 @@ pub fn setBlockCursor(win: vaxis.Window) void {
     win.setCursorShape(vaxis.Cell.CursorShape.block);
 }
 
-pub fn drawPlaylistWin(parent: vaxis.Window) vaxis.Window {
+pub fn drawPlaylistWin(parent: Window, part: usize) Window {
     return parent.child(.{
         .border = white_border,
-        .width = .{ .limit = parent.width / 3 },
+        .width = .{ .limit = parent.width / part },
         .height = .{ .limit = parent.height },
+    });
+}
+
+pub fn drawMusicWin(parent: Window, off: usize) Window {
+    return parent.child(.{
+        .border = white_border,
+        .x_off = off,
     });
 }

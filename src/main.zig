@@ -85,18 +85,11 @@ pub fn main() !void {
 
         const win = vx.window();
 
-        const playlists_win_width = win.width / 3;
-
-        const playlist_win = ui.drawPlaylistWin(win);
+        const playlist_win = ui.drawPlaylistWin(win, 3);
 
         playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
-        const music_window = win.child(.{
-            .border = ui.white_border,
-            .x_off = playlists_win_width,
-            .width = .{ .limit = win.width },
-            .height = .{ .limit = win.height },
-        });
+        const music_window = ui.drawMusicWin(win, playlist_win.width + 2);
         _ = music_window;
 
         for (music.items, 0..) |item, i| {
