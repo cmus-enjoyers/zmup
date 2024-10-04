@@ -6,6 +6,7 @@ const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
+const scrolling = @import("keybinds/scrolling.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -71,21 +72,8 @@ pub fn main() !void {
                 if (key.matches('q', .{})) {
                     break;
                 }
-                if (key.matches('j', .{})) {
-                    playlist_scroll.scroll.y +|= 1;
-                }
 
-                if (key.matches('k', .{})) {
-                    playlist_scroll.scroll.y -|= 1;
-                }
-
-                if (key.matches('G', .{})) {
-                    playlist_scroll.scroll.y = std.math.maxInt(usize);
-                }
-
-                if (key.matches('g', .{})) {
-                    playlist_scroll.scroll.y = 0;
-                }
+                scrolling.input(key, &playlist_scroll);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
