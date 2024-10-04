@@ -112,7 +112,6 @@ pub fn main() !void {
                     .grapheme = item.name,
                 },
             });
-            // _ = try playlists_c.printSegment(vaxis.Segment{ .text = item.name }, .{ .row_offset = i });
         }
 
         _ = music_window;
