@@ -63,6 +63,8 @@ pub fn main() !void {
     }
 
     var playlist_scroll = ScrollView{};
+    var music_scroll = ScrollView{};
+    _ = &music_scroll;
 
     while (true) {
         const event = loop.nextEvent();
@@ -71,6 +73,10 @@ pub fn main() !void {
             .key_press => |key| {
                 if (key.matches('q', .{})) {
                     break;
+                }
+
+                if (key.matches(13, .{})) {
+                    _ = try music.items[music_scroll.scroll.y].load();
                 }
 
                 scrolling.input(key, &playlist_scroll);
@@ -98,6 +104,13 @@ pub fn main() !void {
                 },
                 .style = style,
             });
+
+            if (i == playlist_scroll.scroll.y) {
+                if (music.items[i].content) |contentee| {
+                    _ = contentee;
+                    // music_scroll.draw(music_window, .{});
+                }
+            }
         }
 
         try vx.render(any_writer);
