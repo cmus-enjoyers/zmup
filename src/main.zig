@@ -107,8 +107,7 @@ pub fn main() !void {
 
             if (i == playlist_scroll.scroll.y) {
                 if (music.items[i].content) |contentee| {
-                    _ = contentee;
-                    // music_scroll.draw(music_window, .{});
+                    music_scroll.draw(music_window, .{ .rows = contentee.items.len, .cols = music_window.width });
                 }
             }
         }
