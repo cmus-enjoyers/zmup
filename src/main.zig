@@ -106,8 +106,17 @@ pub fn main() !void {
             });
 
             if (i == playlist_scroll.scroll.y) {
-                if (music.items[i].content) |contentee| {
-                    music_scroll.draw(music_window, .{ .rows = contentee.items.len, .cols = music_window.width });
+                if (music.items[i].content) |content| {
+                    music_scroll.draw(music_window, .{ .rows = content.items.len, .cols = music_window.width });
+
+                    for (content.items, 0..) |track, j| {
+                        music_scroll.writeCell(music_window, 0, j, vaxis.Cell{
+                            .char = .{
+                                .width = track.name.len,
+                                .grapheme = track.name,
+                            },
+                        });
+                    }
                 }
             }
         }
