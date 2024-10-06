@@ -104,21 +104,22 @@ pub fn main() !void {
                 .style = style,
             });
 
-            if (i == playlist_scroll.scroll.y) {
-                if (music.items[i].content) |content| {
-                    music_scroll.draw(music_window, .{ .rows = content.items.len, .cols = music_window.width });
+            if (music.items[playlist_scroll.scroll.y].content) |content| {
+                try ui.drawText(music_window, "did", 0, 3);
 
-                    for (content.items, 0..) |track, j| {
-                        music_scroll.writeCell(music_window, 0, j, vaxis.Cell{
-                            .char = .{
-                                .width = track.name.len,
-                                .grapheme = track.name,
-                            },
-                        });
-                    }
-                } else {
-                    try ui.drawText(music_window, ui.logo, 0, 0);
+                music_scroll.draw(music_window, .{ .rows = content.items.len, .cols = music_window.width });
+
+                for (content.items, 0..) |track, j| {
+                    music_scroll.writeCell(music_window, 0, j, vaxis.Cell{
+                        .char = .{
+                            .width = track.name.len,
+                            .grapheme = track.name,
+                        },
+                    });
                 }
+            } else {
+                music_window.clear();
+                try ui.drawText(music_window, ui.logo, 0, 0);
             }
         }
 
