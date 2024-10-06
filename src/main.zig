@@ -76,7 +76,10 @@ pub fn main() !void {
                 }
 
                 if (key.matches(13, .{})) {
-                    _ = try music.items[playlist_scroll.scroll.y].load();
+                    // TODO: optimize playlist loading. pg3d playlist causes
+                    // microfreeze whilie loading it, in cmus it doesn't
+                    const process = try std.Thread.spawn(.{}, playlists.Playlist.voidLoad, .{music.items[playlist_scroll.scroll.y]});
+                    process.join();
                 }
 
                 if (key.matches(' ', .{})) {
