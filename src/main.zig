@@ -64,7 +64,7 @@ pub fn main() !void {
 
     var playlist_scroll = ScrollView{};
     var music_scroll = ScrollView{};
-    _ = &music_scroll;
+    var selected_view = &playlist_scroll;
 
     while (true) {
         const event = loop.nextEvent();
@@ -76,10 +76,14 @@ pub fn main() !void {
                 }
 
                 if (key.matches(13, .{})) {
-                    _ = try music.items[music_scroll.scroll.y].load();
+                    _ = try music.items[playlist_scroll.scroll.y].load();
                 }
 
-                scrolling.input(key, &playlist_scroll);
+                if (key.matches(' ', .{})) {
+                    selected_view = &music_scroll;
+                }
+
+                scrolling.input(key, selected_view);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
@@ -105,8 +109,6 @@ pub fn main() !void {
             });
 
             if (music.items[playlist_scroll.scroll.y].content) |content| {
-                try ui.drawText(music_window, "did", 0, 3);
-
                 music_scroll.draw(music_window, .{ .rows = content.items.len, .cols = music_window.width });
 
                 for (content.items, 0..) |track, j| {
