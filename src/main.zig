@@ -92,7 +92,6 @@ pub fn main() !void {
         playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
         const music_window = ui.drawMusicWin(win, playlist_win.width + 2);
-        _ = try music_window.printSegment(vaxis.Segment{ .text = ui.logo }, .{});
 
         for (music.items, 0..) |item, i| {
             const style = if (playlist_scroll.scroll.y == i) ui.selected_item_style else undefined;
@@ -117,6 +116,8 @@ pub fn main() !void {
                             },
                         });
                     }
+                } else {
+                    try ui.drawText(music_window, ui.logo, 0, 0);
                 }
             }
         }
