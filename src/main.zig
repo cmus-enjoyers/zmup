@@ -78,12 +78,11 @@ pub fn main() !void {
                 if (key.matches(13, .{})) {
                     // TODO: optimize playlist loading. pg3d playlist causes
                     // microfreeze whilie loading it, in cmus it doesn't
-                    const process = try std.Thread.spawn(.{}, playlists.Playlist.voidLoad, .{music.items[playlist_scroll.scroll.y]});
-                    process.join();
+                    _ = try music.items[playlist_scroll.scroll.y].load();
                 }
 
                 if (key.matches(' ', .{})) {
-                    selected_view = &music_scroll;
+                    selected_view = if (std.meta.eql(selected_view, &music_scroll)) &playlist_scroll else &music_scroll;
                 }
 
                 scrolling.input(key, selected_view);
@@ -94,11 +93,11 @@ pub fn main() !void {
 
         const win = vx.window();
 
-        const playlist_win = ui.drawPlaylistWin(win, 3);
+        const playlist_win = ui.drawPlaylistWin(win, 3, std.meta.eql(selected_view, &playlist_scroll));
 
         playlist_scroll.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
 
-        const music_window = ui.drawMusicWin(win, playlist_win.width + 2);
+        const music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_scroll));
 
         for (music.items, 0..) |item, i| {
             const style = if (playlist_scroll.scroll.y == i) ui.selected_item_style else undefined;
