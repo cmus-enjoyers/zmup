@@ -59,5 +59,10 @@ pub fn drawMusicWin(parent: Window, off: usize, is_selected: bool) Window {
     });
 }
 
+pub const List = struct {
+    view: *vaxis.widgets.ScrollView,
+    selected: usize = 0,
+};
+
 pub const logo =
     "Zig Music Player";
