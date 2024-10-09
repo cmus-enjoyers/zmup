@@ -6,7 +6,6 @@ const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
-const scrolling = @import("keybinds/scrolling.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -84,14 +83,14 @@ pub fn main() !void {
                 if (key.matches(13, .{})) {
                     // TODO: optimize playlist loading. pg3d playlist causes
                     // microfreeze whilie loading it, in cmus it doesn't
-                    _ = try music.items[playlist_list.view.scroll.y].load();
+                    _ = try music.items[playlist_list.selected].load();
                 }
 
                 if (key.matches(' ', .{})) {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
                 }
 
-                scrolling.input(key, selected_view);
+                selected_view.input(key);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
@@ -101,12 +100,12 @@ pub fn main() !void {
 
         const playlist_win = ui.drawPlaylistWin(win, 3, std.meta.eql(selected_view, &playlist_list));
 
-        playlist_list.view.draw(playlist_win, .{ .cols = playlist_win.width, .rows = music.items.len });
+        playlist_list.draw(playlist_win, playlist_win.width, music.items.len);
 
         const music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
         for (music.items, 0..) |item, i| {
-            const style = if (playlist_list.view.scroll.y == i) ui.selected_item_style else undefined;
+            const style = if (playlist_list.selected == i) ui.selected_item_style else undefined;
 
             playlist_list.view.writeCell(playlist_win, 0, i, vaxis.Cell{
                 .char = .{
@@ -117,8 +116,8 @@ pub fn main() !void {
             });
 
             // TODO: change this indexing to playlist_list.selected
-            if (music.items[playlist_list.view.scroll.y].content) |content| {
-                music_list.view.draw(music_window, .{ .rows = content.items.len, .cols = music_window.width });
+            if (music.items[playlist_list.selected].content) |content| {
+                music_list.draw(music_window, content.items.len, music_window.width);
 
                 for (content.items, 0..) |track, j| {
                     music_list.view.writeCell(music_window, 0, j, vaxis.Cell{
