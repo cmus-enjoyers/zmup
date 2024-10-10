@@ -104,37 +104,8 @@ pub fn main() !void {
         playlist_list.draw(playlist_win, playlist_win.width, music.items.len);
 
         const music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
-        _ = music_window;
 
-        try main_view.drawMainView(&playlist_list, music);
-        // for (music.items, 0..) |item, i| {
-        //     const style = if (playlist_list.selected == i) ui.selected_item_style else undefined;
-        //
-        //     playlist_list.view.writeCell(playlist_win, 0, i, vaxis.Cell{
-        //         .char = .{
-        //             .width = item.name.len,
-        //             .grapheme = item.name,
-        //         },
-        //         .style = style,
-        //     });
-        //
-        //     // TODO: change this indexing to playlist_list.selected
-        //     if (music.items[playlist_list.selected].content) |content| {
-        //         music_list.draw(music_window, content.items.len, music_window.width);
-        //
-        //         for (content.items, 0..) |track, j| {
-        //             music_list.view.writeCell(music_window, 0, j, vaxis.Cell{
-        //                 .char = .{
-        //                     .width = track.name.len,
-        //                     .grapheme = track.name,
-        //                 },
-        //             });
-        //         }
-        //     } else {
-        //         music_window.clear();
-        //         try ui.drawText(music_window, ui.logo, 0, 0);
-        //     }
-        // }
+        try main_view.drawMainView(&playlist_list, music, music_window, &music_list);
 
         try vx.render(any_writer);
     }
