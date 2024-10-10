@@ -13,9 +13,9 @@ pub const AVError = error{
     Perm,
     /// AVERROR(EAGAIN)
     Again,
-    // AVERROR(ENOSYS)
+    /// AVERROR(ENOSYS)
     NoSys,
-    //// AVERROR(ENODATA)
+    /// AVERROR(ENODATA)
     NoData,
     /// AVERROR(ETIMEDOUT)
     TimedOut,

@@ -77,6 +77,10 @@ pub const Playlist = struct {
 
         return content.items;
     }
+
+    pub fn voidLoad(self: *Playlist) !void {
+        _ = try self.load();
+    }
 };
 
 pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
