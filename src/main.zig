@@ -73,9 +73,7 @@ pub fn main() !void {
     var selected_view = &playlist_list;
 
     while (true) {
-        const event = loop.nextEvent();
-
-        switch (event) {
+        switch (loop.nextEvent()) {
             .key_press => |key| {
                 if (key.matches('q', .{})) {
                     break;
@@ -85,6 +83,7 @@ pub fn main() !void {
                     // TODO: optimize playlist loading. pg3d playlist causes
                     // microfreeze whilie loading it, in cmus it doesn't
                     _ = try music.items[playlist_list.selected].load();
+                    selected_view = &music_list;
                 }
 
                 if (key.matches(' ', .{})) {
@@ -106,6 +105,12 @@ pub fn main() !void {
         const music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
         try main_view.drawMainView(&playlist_list, music, music_window, &music_list);
+
+        // Maybe add this later when we will use non blocking loop.tryEvent().
+        // without this program will use 100% of one cpu thread.
+        // For now only event-driven rendering
+        //
+        // std.time.sleep(16670000)
 
         try vx.render(any_writer);
     }

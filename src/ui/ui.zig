@@ -17,6 +17,8 @@ pub const white_rgb = .{255} ** 3;
 pub const black_rgb = .{0} ** 3;
 
 pub const green_index = 2;
+pub const white_index = 255;
+pub const black_index = 0;
 
 pub const green_border: vaxis.Window.BorderOptions = .{
     .style = .{ .fg = .{ .index = green_index } },
@@ -31,12 +33,16 @@ pub const white_border: vaxis.Window.BorderOptions = .{
 pub const selected_item_style: vaxis.Style = .{
     .italic = true,
     .bg = .{
-        .rgb = white_rgb,
+        .index = white_index,
     },
     .fg = .{
-        .rgb = black_rgb,
+        .index = black_index,
     },
 };
+
+pub fn style_list_item(is_selected: bool) vaxis.Style {
+    return if (is_selected == true) selected_item_style else undefined;
+}
 
 pub fn border(condition: bool) vaxis.Window.BorderOptions {
     return if (condition == true) green_border else white_border;
