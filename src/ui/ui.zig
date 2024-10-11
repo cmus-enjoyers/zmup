@@ -14,7 +14,6 @@ pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: 
 }
 
 pub const white_rgb = .{255} ** 3;
-pub const black_rgb = .{0} ** 3;
 
 pub const green_index = 2;
 pub const white_index = 255;
