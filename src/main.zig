@@ -1,6 +1,7 @@
 const std = @import("std");
 const vaxis = @import("vaxis");
 const ui = @import("ui/ui.zig");
+const List = @import("components/list.zig").List;
 const playlists = @import("playlists/playlists.zig");
 const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
@@ -67,8 +68,8 @@ pub fn main() !void {
 
     var playlist_view = ScrollView{};
     var music_view = ScrollView{};
-    var playlist_list = ui.List{ .view = &playlist_view };
-    var music_list = ui.List{ .view = &music_view };
+    var playlist_list = List{ .view = &playlist_view };
+    var music_list = List{ .view = &music_view };
 
     var selected_view = &playlist_list;
 

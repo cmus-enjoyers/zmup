@@ -1,9 +1,10 @@
 const ui = @import("../ui/ui.zig");
 const std = @import("std");
 const Playlist = @import("../playlists/playlists.zig").Playlist;
+const List = @import("../components/list.zig").List;
 const vaxis = @import("vaxis");
 
-pub fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *ui.List) void {
+pub fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) void {
     if (music.items[selected_index].content) |content| {
         music_window.clear();
 
@@ -26,7 +27,7 @@ pub fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usiz
     }
 }
 
-pub fn drawMainView(playlist_list: *ui.List, music: std.ArrayList(*Playlist), music_window: vaxis.Window, music_list: *ui.List) !void {
+pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music_window: vaxis.Window, music_list: *List) !void {
     for (music.items, 0..) |item, i| {
         playlist_list.view.writeCell(playlist_list.window.?, 0, i, vaxis.Cell{
             .char = .{
