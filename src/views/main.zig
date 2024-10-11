@@ -4,7 +4,7 @@ const Playlist = @import("../playlists/playlists.zig").Playlist;
 const List = @import("../components/list.zig").List;
 const vaxis = @import("vaxis");
 
-pub fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) void {
+fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) void {
     if (music.items[selected_index].content) |content| {
         music_window.clear();
 

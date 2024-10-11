@@ -7,7 +7,7 @@ const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
-const main_view = @import("views/main.zig");
+const drawMainView = @import("views/main.zig").drawMainView;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
