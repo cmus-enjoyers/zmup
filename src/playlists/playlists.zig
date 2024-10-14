@@ -10,7 +10,7 @@ pub const Playlist = struct {
     content: ?std.ArrayList(*Track) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
-    /// 0 means playlist is not loaded.
+    iterator: ?*std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence) = null,
     duration: i64 = 0,
 
     pub fn init(
@@ -33,6 +33,10 @@ pub const Playlist = struct {
 
         if (self.contentUnsplitted) |content| {
             self.allocator.free(content);
+        }
+
+        if (self.iterator) |iterator| {
+            self.allocator.destroy(iterator);
         }
 
         self.allocator.free(self.path);
@@ -78,7 +82,7 @@ pub const Playlist = struct {
         return content.items;
     }
 
-    pub fn loadThreaded(self: *Playlist, until: usize) !void {
+    pub fn loadUntil(self: *Playlist, until: usize) !void {
         var content = std.ArrayList(*Track).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
@@ -92,15 +96,14 @@ pub const Playlist = struct {
             "\n",
         );
 
-        self.content = content;
-        self.contentUnsplitted = data;
-
         var i: usize = 0;
 
         while (iterator.next()) |item| : ({
             i += 1;
         }) {
             if (i == until) {
+                self.iterator = try self.allocator.create(std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence));
+                self.iterator = iterator;
                 break;
             }
 

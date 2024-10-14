@@ -83,8 +83,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches(13, .{})) {
-                    _ = try music.items[playlist_list.selected].loadThreaded(music_window.?.height);
-                    // _ = try music.items[playlist_list.selected].load();
+                    _ = try music.items[playlist_list.selected].loadUntil(music_window.?.height);
                     selected_view = &music_list;
                 }
 
