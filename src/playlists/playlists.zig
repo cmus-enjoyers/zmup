@@ -42,6 +42,14 @@ pub const Playlist = struct {
         self.allocator.free(self.path);
     }
 
+    pub fn createTrack(self: *Playlist, path: []const u8) *Track {
+        const track_ptr = try self.allocator.create(Track);
+
+        track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, path));
+
+        return track_ptr;
+    }
+
     pub fn load(self: *Playlist) ![]*Track {
         if (self.content) |content| {
             return content.items;
@@ -65,15 +73,13 @@ pub const Playlist = struct {
                 continue;
             }
 
-            const track_ptr = try self.allocator.create(Track);
+            const track = self.createTrack(item);
 
-            track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, item));
-
-            if (track_ptr.metadata) |metadata| {
+            if (track.metadata) |metadata| {
                 self.duration += metadata.duration;
             }
 
-            try content.append(track_ptr);
+            try content.append(track);
         }
 
         self.content = content;
@@ -102,8 +108,11 @@ pub const Playlist = struct {
             i += 1;
         }) {
             if (i == until) {
-                self.iterator = try self.allocator.create(std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence));
-                self.iterator = iterator;
+                const ptr = try self.allocator.create(std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence));
+
+                ptr.* = iterator;
+
+                self.iterator = ptr;
                 break;
             }
 
