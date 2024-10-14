@@ -78,23 +78,6 @@ pub const Playlist = struct {
         return content.items;
     }
 
-    pub fn continueLoading(self: *Playlist, iterator: *std.mem.SplitIterator(u8, .sequence)) !void {
-        var thread_safe = std.heap.ThreadSafeAllocator{ .child_allocator = self.allocator };
-        const allocator = thread_safe.allocator();
-
-        while (iterator.next()) |item| {
-            const track_ptr = allocator.create(Track) catch continue;
-
-            track_ptr.* = try Track.init(allocator, item);
-
-            // if (track_ptr.metadata) |metadata| {
-            //     self.duration += metadata.duration;
-            // }
-
-            self.content.?.append(track_ptr) catch continue;
-        }
-    }
-
     pub fn loadThreaded(self: *Playlist, until: usize) !void {
         var content = std.ArrayList(*Track).init(self.allocator);
 
@@ -118,8 +101,6 @@ pub const Playlist = struct {
             i += 1;
         }) {
             if (i == until) {
-                const thread = try std.Thread.spawn(.{ .allocator = self.allocator }, Playlist.continueLoading, .{ self, &iterator });
-                thread.detach();
                 break;
             }
 
