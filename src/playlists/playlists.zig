@@ -78,8 +78,68 @@ pub const Playlist = struct {
         return content.items;
     }
 
-    pub fn voidLoad(self: *Playlist) !void {
-        _ = try self.load();
+    pub fn continueLoading(self: *Playlist, iterator: *std.mem.SplitIterator(u8, .sequence)) !void {
+        var thread_safe = std.heap.ThreadSafeAllocator{ .child_allocator = self.allocator };
+        const allocator = thread_safe.allocator();
+
+        while (iterator.next()) |item| {
+            const track_ptr = allocator.create(Track) catch continue;
+
+            track_ptr.* = try Track.init(allocator, item);
+
+            // if (track_ptr.metadata) |metadata| {
+            //     self.duration += metadata.duration;
+            // }
+
+            self.content.?.append(track_ptr) catch continue;
+        }
+    }
+
+    pub fn loadThreaded(self: *Playlist, until: usize) !void {
+        var content = std.ArrayList(*Track).init(self.allocator);
+
+        const file = try std.fs.openFileAbsolute(self.path, .{});
+        defer file.close();
+
+        const data = try file.readToEndAlloc(self.allocator, try file.getEndPos());
+
+        var iterator = std.mem.splitSequence(
+            u8,
+            data,
+            "\n",
+        );
+
+        self.content = content;
+        self.contentUnsplitted = data;
+
+        var i: usize = 0;
+
+        while (iterator.next()) |item| : ({
+            i += 1;
+        }) {
+            if (i == until) {
+                const thread = try std.Thread.spawn(.{ .allocator = self.allocator }, Playlist.continueLoading, .{ self, &iterator });
+                thread.detach();
+                break;
+            }
+
+            if (item.len == 0) {
+                continue;
+            }
+
+            const track_ptr = try self.allocator.create(Track);
+
+            track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, item));
+
+            if (track_ptr.metadata) |metadata| {
+                self.duration += metadata.duration;
+            }
+
+            try content.append(track_ptr);
+        }
+
+        self.content = content;
+        self.contentUnsplitted = data;
     }
 };
 

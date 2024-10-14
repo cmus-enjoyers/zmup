@@ -7,12 +7,10 @@ pub const Track = struct {
     path: []const u8,
     name: []const u8,
 
-    // TODO: maybe implement format function (https://zig.guide/standard-library/formatting/)
-
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Track {
         const track_metadata = try allocator.create(Metadata);
-        const stem = std.fs.path.stem(path);
         const duped_path = try allocator.dupe(u8, path);
+        const stem = std.fs.path.stem(duped_path);
 
         track_metadata.* = Metadata.init(allocator, path) catch {
             return Track{

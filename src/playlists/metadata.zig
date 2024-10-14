@@ -40,6 +40,7 @@ pub const Metadata = struct {
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         const ptr = try allocator.create(*c.AVFormatContext);
+
         errdefer {
             c.avformat_close_input(@ptrCast(ptr));
 
