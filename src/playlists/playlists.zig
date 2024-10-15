@@ -1,6 +1,7 @@
 const std = @import("std");
 const tracks = @import("track.zig");
 const Track = tracks.Track;
+const time = @import("../misc/time.zig");
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
 
@@ -12,6 +13,7 @@ pub const Playlist = struct {
     allocator: Allocator,
     iterator: ?*std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence) = null,
     duration: i64 = 0,
+    duration_string: ?[]const u8 = null,
 
     pub fn init(
         allocator: std.mem.Allocator,
@@ -37,6 +39,10 @@ pub const Playlist = struct {
 
         if (self.iterator) |iterator| {
             self.allocator.destroy(iterator);
+        }
+
+        if (self.duration_string) |duration| {
+            self.allocator.free(duration);
         }
 
         self.allocator.free(self.path);
@@ -141,6 +147,18 @@ pub const Playlist = struct {
 
         self.content = content;
         self.contentUnsplitted = data;
+    }
+
+    pub fn getReadableDuration(self: *Playlist) ![]const u8 {
+        if (self.duration_string) |duration| {
+            return duration;
+        }
+
+        const duration = try time.avTimeToString(self.allocator, self.duration);
+
+        self.duration_string = duration;
+
+        return duration;
     }
 };
 
