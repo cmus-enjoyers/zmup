@@ -93,7 +93,9 @@ pub fn main() !void {
 
                 selected_view.input(key);
 
-                if (std.meta.eql(selected_view, &music_list)) {}
+                if (std.meta.eql(selected_view, &music_list)) {
+                    try music.items[playlist_list.selected].continueLoading(music_window.?.height);
+                }
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},

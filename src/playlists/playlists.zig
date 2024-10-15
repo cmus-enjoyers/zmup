@@ -97,10 +97,21 @@ pub const Playlist = struct {
 
     pub fn continueLoading(self: *Playlist, until: usize) !void {
         if (self.iterator) |iterator| {
-            _ = iterator;
-            _ = until;
-        } else {
-            return error.NoIterator;
+            var i: usize = 0;
+
+            while (iterator.next()) |item| : ({
+                i += 1;
+            }) {
+                if (i == until) {
+                    break;
+                }
+
+                if (item.len == 0) {
+                    continue;
+                }
+
+                try self.content.?.append(try self.createTrack(item));
+            }
         }
     }
 
