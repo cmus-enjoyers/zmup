@@ -58,6 +58,7 @@ pub const Playlist = struct {
         var content = std.ArrayList(*Track).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
+
         defer file.close();
 
         const data = try file.readToEndAlloc(self.allocator, try file.getEndPos());
@@ -73,7 +74,7 @@ pub const Playlist = struct {
                 continue;
             }
 
-            const track = self.createTrack(item);
+            const track = try self.createTrack(item);
 
             if (track.metadata) |metadata| {
                 self.duration += metadata.duration;
@@ -86,6 +87,15 @@ pub const Playlist = struct {
         self.contentUnsplitted = data;
 
         return content.items;
+    }
+
+    pub fn continueLoading(self: *Playlist, until: usize) !void {
+        if (self.iterator) |iterator| {
+            _ = iterator;
+            _ = until;
+        } else {
+            return error.NoIterator;
+        }
     }
 
     pub fn loadUntil(self: *Playlist, until: usize) !void {

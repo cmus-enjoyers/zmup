@@ -83,7 +83,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches(13, .{})) {
-                    _ = try music.items[playlist_list.selected].loadUntil(music_window.?.height);
+                    try music.items[playlist_list.selected].loadUntil(music_window.?.height);
                     selected_view = &music_list;
                 }
 
@@ -92,6 +92,8 @@ pub fn main() !void {
                 }
 
                 selected_view.input(key);
+
+                if (std.meta.eql(selected_view, &music_list)) {}
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},
@@ -105,7 +107,7 @@ pub fn main() !void {
 
         music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
-        try drawMainView(&playlist_list, music, music_window.?, &music_list);
+        try drawMainView(allocator, &playlist_list, music, music_window.?, &music_list);
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
         // without this program will use 100% of one cpu thread.
