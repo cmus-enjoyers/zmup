@@ -6,6 +6,7 @@ const playlists = @import("playlists/playlists.zig");
 const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
+const timeout = @import("misc/timeout.zig");
 const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
 
@@ -72,6 +73,7 @@ pub fn main() !void {
     var music_list = List{ .view = &music_view };
     var selected_view = &playlist_list;
     var last_keybind: []const u8 = "";
+    const time_ms = 1000 * std.time.ns_per_ms;
 
     while (true) {
         switch (loop.nextEvent()) {
@@ -82,14 +84,18 @@ pub fn main() !void {
 
                 if (key.matches('s', .{})) {
                     last_keybind = "s";
+                    const thread_sleep = try std.Thread.spawn(.{}, timeout.timeout, .{ time_ms, &last_keybind });
+                    thread_sleep.detach();
                 }
 
                 if (key.matches('j', .{}) and std.mem.eql(u8, last_keybind, "s")) {
                     try sorting.sort(music, sorting.SortMethods.greater);
+                    last_keybind = "";
                 }
 
                 if (key.matches('k', .{}) and std.mem.eql(u8, last_keybind, "s")) {
                     try sorting.sort(music, sorting.SortMethods.less);
+                    last_keybind = "";
                 }
 
                 if (key.matches(13, .{})) {
