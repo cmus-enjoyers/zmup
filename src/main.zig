@@ -94,8 +94,14 @@ pub fn main() !void {
                 selected_view.input(key);
 
                 if (std.meta.eql(selected_view, &music_list)) {
+                    if (key.matches('g', .{ .shift = true })) {
+                        _ = try music.items[playlist_list.selected].continueLoading(std.math.maxInt(usize));
+                    }
+
                     try music.items[playlist_list.selected].continueLoading(music_window.?.height);
                 }
+
+                selected_view.input(key);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
             else => {},

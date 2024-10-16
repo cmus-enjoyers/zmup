@@ -112,6 +112,8 @@ pub const Playlist = struct {
 
                 try self.content.?.append(try self.createTrack(item));
             }
+        } else {
+            self.iterator = null;
         }
     }
 

@@ -45,5 +45,11 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
         });
     }
 
+    var x: [64]u8 = [1]u8{0} ** 64;
+
+    _ = try std.fmt.bufPrint(&x, "{}", .{music_list.selected});
+
     try drawPlaylistContent(music, playlist_list.selected, music_window, music_list);
+
+    _ = try music_window.printSegment(.{ .text = &x }, .{});
 }
