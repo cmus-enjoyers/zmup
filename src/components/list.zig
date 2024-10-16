@@ -41,6 +41,11 @@ pub const List = struct {
         }
     }
 
+    pub fn setRows(self: *List, rows: usize) void {
+        self.rows = rows;
+        // TODO: maybe come up with something better
+    }
+
     pub fn draw(
         self: *List,
         parent: vaxis.Window,

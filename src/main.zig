@@ -93,8 +93,9 @@ pub fn main() !void {
                 }
 
                 if (std.meta.eql(selected_view, &music_list) and isScrollingKey(key)) {
-                    if (key.matches('g', .{ .shift = true })) {
-                        _ = try music.items[playlist_list.selected].continueLoading(std.math.maxInt(usize));
+                    if (key.matches('G', .{})) {
+                        try music.items[playlist_list.selected].continueLoading(std.math.maxInt(usize));
+                        music_list.setRows(music.items[playlist_list.selected].content.?.items.len);
                     }
 
                     try music.items[playlist_list.selected].continueLoading(music_window.?.height);
