@@ -56,3 +56,7 @@ pub const List = struct {
         });
     }
 };
+
+pub fn isScrollingKey(key: vaxis.Key) bool {
+    return key.matches('j', .{}) or key.matches('k', .{}) or key.matches('G', .{}) or key.matches('g', .{});
+}

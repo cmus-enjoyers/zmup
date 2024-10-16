@@ -47,9 +47,12 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
 
     var x: [64]u8 = [1]u8{0} ** 64;
 
-    _ = try std.fmt.bufPrint(&x, "{}", .{music_list.selected});
+    _ = try std.fmt.bufPrint(&x, "{} {}", .{ music_list.selected, music_list.view.scroll.y });
 
     try drawPlaylistContent(music, playlist_list.selected, music_window, music_list);
 
-    _ = try music_window.printSegment(.{ .text = &x }, .{});
+    _ = try music_window.printSegment(.{ .text = &x }, .{
+        .row_offset = music_window.height - 1,
+        .col_offset = music_window.width - x[0..std.mem.indexOf(u8, &x, &[_]u8{0}).?].len,
+    });
 }

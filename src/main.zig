@@ -9,6 +9,7 @@ const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
+const isScrollingKey = @import("./components/list.zig").isScrollingKey;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -91,9 +92,7 @@ pub fn main() !void {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
                 }
 
-                selected_view.input(key);
-
-                if (std.meta.eql(selected_view, &music_list)) {
+                if (std.meta.eql(selected_view, &music_list) and isScrollingKey(key)) {
                     if (key.matches('g', .{ .shift = true })) {
                         _ = try music.items[playlist_list.selected].continueLoading(std.math.maxInt(usize));
                     }
