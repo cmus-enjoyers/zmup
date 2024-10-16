@@ -12,10 +12,13 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
         music_list.draw(music_window, content.items.len, music_window.width);
 
         for (content.items, 0..) |track, i| {
-            music_list.view.writeCell(music_window, 0, i, vaxis.Cell{ .char = .{
-                .width = track.name.len,
-                .grapheme = track.name,
-            }, .style = ui.style_list_item(music_list.selected == i) });
+            music_list.view.writeCell(music_window, 0, i, vaxis.Cell{
+                .char = .{
+                    .width = track.name.len,
+                    .grapheme = track.name,
+                },
+                .style = ui.style_list_item(music_list.selected == i),
+            });
         }
 
         const duration = try music.items[selected_index].getReadableDuration();

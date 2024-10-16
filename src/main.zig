@@ -9,7 +9,7 @@ const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
-const isScrollingKey = @import("./components/list.zig").isScrollingKey;
+const laziness = @import("./keybinds/lazy.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -59,7 +59,9 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
+
     try sorting.sort(music, sorting.SortMethods.greater);
+
     defer {
         for (music.items) |track| {
             track.deinit();
@@ -92,14 +94,7 @@ pub fn main() !void {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
                 }
 
-                if (std.meta.eql(selected_view, &music_list) and isScrollingKey(key)) {
-                    if (key.matches('G', .{})) {
-                        try music.items[playlist_list.selected].continueLoading(std.math.maxInt(usize));
-                        music_list.setRows(music.items[playlist_list.selected].content.?.items.len);
-                    }
-
-                    try music.items[playlist_list.selected].continueLoading(music_window.?.height);
-                }
+                try laziness.input(key, selected_view, &music_list, music.items[playlist_list.selected], music_window.?.height);
 
                 selected_view.input(key);
             },
