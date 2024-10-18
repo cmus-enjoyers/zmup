@@ -10,6 +10,7 @@ const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
+const Metadata = @import("./playlists/metadata.zig").Metadata;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -50,7 +51,7 @@ pub fn main() !void {
 
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
-    c.av_log_set_level(c.AV_LOG_QUIET);
+    c.av_log_set_level(c.AV_LOG_DEBUG);
 
     try vx.setTitle(any_writer, "Zig music player");
 

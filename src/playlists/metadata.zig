@@ -41,9 +41,10 @@ pub const Metadata = struct {
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         const ptr = try allocator.create(*c.AVFormatContext);
 
-        errdefer {
+        errdefer |err| {
             c.avformat_close_input(@ptrCast(ptr));
 
+            std.debug.print("errdefer (Metadata) {}", .{err});
             allocator.destroy(ptr);
         }
 
@@ -68,6 +69,7 @@ pub const Metadata = struct {
 
     pub fn deinit(self: *Metadata) void {
         c.avformat_close_input(@ptrCast(self.context));
+        c.avformat_free_context(@ptrCast(self.context));
 
         self.allocator.destroy(self.context);
     }

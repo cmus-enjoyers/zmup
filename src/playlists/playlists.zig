@@ -4,6 +4,7 @@ const Track = tracks.Track;
 const time = @import("../misc/time.zig");
 const fs = std.fs;
 const Allocator = std.mem.Allocator;
+const c = @import("../root.zig").c;
 
 pub const Playlist = struct {
     path: []const u8,
@@ -51,7 +52,7 @@ pub const Playlist = struct {
     pub fn createTrack(self: *Playlist, path: []const u8) !*Track {
         const track_ptr = try self.allocator.create(Track);
 
-        track_ptr.* = try Track.init(self.allocator, try self.allocator.dupe(u8, path));
+        track_ptr.* = try Track.init(self.allocator, path);
 
         return track_ptr;
     }
@@ -117,6 +118,15 @@ pub const Playlist = struct {
         }
     }
 
+    pub fn threadLoad(self: *Playlist) !void {
+        if (self.iterator) |iterator| {
+            while (iterator.next()) |item| {
+                const track = try self.createTrack(item);
+                try self.content.?.append(track);
+            }
+        }
+    }
+
     pub fn loadUntil(self: *Playlist, until: usize) !void {
         var content = std.ArrayList(*Track).init(self.allocator);
 
@@ -141,7 +151,12 @@ pub const Playlist = struct {
 
                 ptr.* = iterator;
                 self.iterator = ptr;
+                self.content = content;
 
+                // _ = c.avformat_network_init();
+                // const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
+                //
+                // thread.detach();
                 break;
             }
 
