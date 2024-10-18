@@ -153,10 +153,10 @@ pub const Playlist = struct {
                 self.iterator = ptr;
                 self.content = content;
 
-                // _ = c.avformat_network_init();
-                // const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
-                //
-                // thread.detach();
+                _ = c.avformat_network_init();
+                const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
+
+                thread.detach();
                 break;
             }
 

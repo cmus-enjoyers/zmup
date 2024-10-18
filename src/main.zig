@@ -52,6 +52,7 @@ pub fn main() !void {
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
     c.av_log_set_level(c.AV_LOG_DEBUG);
+    c.av_log_set_level(c.AV_LOG_QUIET);
 
     try vx.setTitle(any_writer, "Zig music player");
 
@@ -95,7 +96,7 @@ pub fn main() !void {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
                 }
 
-                try laziness.input(key, selected_view, &music_list, music.items[playlist_list.selected], music_window.?.height);
+                // try laziness.input(key, selected_view, &music_list, music.items[playlist_list.selected], music_window.?.height);
 
                 selected_view.input(key);
             },

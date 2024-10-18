@@ -41,16 +41,24 @@ pub const Metadata = struct {
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !Metadata {
         const ptr = try allocator.create(*c.AVFormatContext);
 
-        errdefer |err| {
+        errdefer {
             c.avformat_close_input(@ptrCast(ptr));
 
-            std.debug.print("errdefer (Metadata) {}", .{err});
             allocator.destroy(ptr);
         }
 
         ptr.* = c.avformat_alloc_context();
 
+        if (@as(?**c.AVFormatContext, ptr) == null) {
+            return error.Kys;
+        }
+
         try ffmpeg.avFormatOpenInput(@ptrCast(ptr), @ptrCast(path), null, null);
+
+        if (@as(?*c.AVFormatContext, ptr.*) == null) {
+            return error.Kys;
+        }
+
         try ffmpeg.avFormatFindStreamInfo(@ptrCast(ptr.*), null);
 
         return Metadata{
