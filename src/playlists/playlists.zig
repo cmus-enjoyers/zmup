@@ -143,6 +143,9 @@ pub const Playlist = struct {
 
         var i: usize = 0;
 
+        self.content = content;
+        self.contentUnsplitted = data;
+
         while (iterator.next()) |item| : ({
             i += 1;
         }) {
@@ -153,7 +156,6 @@ pub const Playlist = struct {
                 self.iterator = ptr;
                 self.content = content;
 
-                _ = c.avformat_network_init();
                 const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
 
                 thread.detach();
@@ -172,9 +174,6 @@ pub const Playlist = struct {
 
             try content.append(track);
         }
-
-        self.content = content;
-        self.contentUnsplitted = data;
     }
 
     pub fn getReadableDuration(self: *Playlist) ![]const u8 {

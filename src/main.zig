@@ -96,8 +96,6 @@ pub fn main() !void {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
                 }
 
-                // try laziness.input(key, selected_view, &music_list, music.items[playlist_list.selected], music_window.?.height);
-
                 selected_view.input(key);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
