@@ -32,6 +32,7 @@ pub const Playlist = struct {
     pub fn deinit(self: Playlist) void {
         if (self.content) |content| {
             content.deinit();
+            self.allocator.destroy(content);
         }
 
         if (self.contentUnsplitted) |content| {

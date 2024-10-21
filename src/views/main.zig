@@ -11,7 +11,6 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
 
         music_list.draw(music_window, content.items.len, music_window.width);
 
-        std.debug.print("{*}\n", .{content.items});
         for (content.items, 0..) |track, i| {
             music_list.view.writeCell(music_window, 0, i, vaxis.Cell{
                 .char = .{
