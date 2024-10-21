@@ -9,7 +9,7 @@ const c = @import("../root.zig").c;
 pub const Playlist = struct {
     path: []const u8,
     name: []const u8,
-    content: ?std.ArrayList(*Track) = null,
+    content: ?*std.ArrayList(*Track) = null,
     contentUnsplitted: ?[]const u8 = null,
     allocator: Allocator,
     iterator: ?*std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence) = null,
@@ -128,7 +128,8 @@ pub const Playlist = struct {
     }
 
     pub fn loadUntil(self: *Playlist, until: usize) !void {
-        var content = std.ArrayList(*Track).init(self.allocator);
+        const content = try self.allocator.create(std.ArrayList(*Track));
+        content.* = std.ArrayList(*Track).init(self.allocator);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
@@ -154,7 +155,6 @@ pub const Playlist = struct {
 
                 ptr.* = iterator;
                 self.iterator = ptr;
-                self.content = content;
 
                 const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
 
