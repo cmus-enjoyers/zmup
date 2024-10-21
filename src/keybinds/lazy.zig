@@ -4,6 +4,8 @@ const validateScrollingKey = @import("../components/list.zig").validateScrolling
 const vaxis = @import("vaxis");
 const Playlist = @import("../playlists/playlists.zig").Playlist;
 
+// NOTE: add this as an option to an optimization in a config file.
+
 pub fn input(key: vaxis.Key, selected_view: *List, music_list: *List, selected_playlist: *Playlist, height: usize) !void {
     if (std.meta.eql(selected_view, music_list)) {
         switch (validateScrollingKey(key)) {
