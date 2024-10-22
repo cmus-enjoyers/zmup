@@ -102,6 +102,8 @@ pub const Playlist = struct {
             while (iterator.next()) |item| {
                 const track = try self.createTrack(item);
                 try self.content.?.append(track);
+            } else {
+                self.iterator = null;
             }
         }
     }
