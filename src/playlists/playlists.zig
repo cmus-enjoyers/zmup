@@ -97,29 +97,7 @@ pub const Playlist = struct {
         return content.items;
     }
 
-    pub fn continueLoading(self: *Playlist, until: usize) !void {
-        if (self.iterator) |iterator| {
-            var i: usize = 0;
-
-            while (iterator.next()) |item| : ({
-                i += 1;
-            }) {
-                if (i == until) {
-                    break;
-                }
-
-                if (item.len == 0) {
-                    continue;
-                }
-
-                try self.content.?.append(try self.createTrack(item));
-            } else {
-                self.iterator = null;
-            }
-        }
-    }
-
-    pub fn threadLoad(self: *Playlist) !void {
+    pub fn continueLoading(self: *Playlist) !void {
         if (self.iterator) |iterator| {
             while (iterator.next()) |item| {
                 const track = try self.createTrack(item);
@@ -157,7 +135,7 @@ pub const Playlist = struct {
                 ptr.* = iterator;
                 self.iterator = ptr;
 
-                const thread = try std.Thread.spawn(.{}, Playlist.threadLoad, .{self});
+                const thread = try std.Thread.spawn(.{}, Playlist.continueLoading, .{self});
 
                 thread.detach();
                 break;
