@@ -6,7 +6,6 @@ const playlists = @import("playlists/playlists.zig");
 const sorting = @import("playlists/sorting.zig");
 const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
-const timeout = @import("misc/timeout.zig");
 const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
 
@@ -58,6 +57,7 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
+    try sorting.sort(music, sorting.SortMethods.greater);
 
     defer {
         for (music.items) |track| {
@@ -84,7 +84,7 @@ pub fn main() !void {
 
                 if (key.matches('s', .{})) {
                     last_keybind = "s";
-                    const thread_sleep = try std.Thread.spawn(.{}, timeout.timeout, .{ time_ms, &last_keybind });
+                    const thread_sleep = try std.Thread.spawn(.{}, timeout, .{ time_ms, &last_keybind });
                     thread_sleep.detach();
                 }
 
@@ -133,4 +133,9 @@ pub fn main() !void {
 
         try vx.render(any_writer);
     }
+}
+
+fn timeout(time_ms: u64, last_keybind: *[]const u8) void {
+    std.time.sleep(time_ms);
+    last_keybind.* = "";
 }
