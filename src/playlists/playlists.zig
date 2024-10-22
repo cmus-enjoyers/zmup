@@ -97,11 +97,20 @@ pub const Playlist = struct {
         return content.items;
     }
 
+    pub fn appendTrack(self: *Playlist, path: []const u8) !void {
+        const track = try self.createTrack(path);
+
+        if (track.metadata) |metadata| {
+            self.duration += metadata.duration;
+        }
+
+        try self.content.?.append(track);
+    }
+
     pub fn continueLoading(self: *Playlist) !void {
         if (self.iterator) |iterator| {
             while (iterator.next()) |item| {
-                const track = try self.createTrack(item);
-                try self.content.?.append(track);
+                try self.appendTrack(item);
             } else {
                 self.iterator = null;
             }
@@ -147,13 +156,7 @@ pub const Playlist = struct {
                 continue;
             }
 
-            const track = try self.createTrack(item);
-
-            if (track.metadata) |metadata| {
-                self.duration += metadata.duration;
-            }
-
-            try content.append(track);
+            try self.appendTrack(item);
         }
     }
 
