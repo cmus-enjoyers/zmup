@@ -41,6 +41,11 @@ pub const List = struct {
         }
     }
 
+    pub fn setRows(self: *List, rows: usize) void {
+        self.rows = rows;
+        // TODO: maybe come up with something better
+    }
+
     pub fn draw(
         self: *List,
         parent: vaxis.Window,
@@ -56,3 +61,35 @@ pub const List = struct {
         });
     }
 };
+
+pub fn isScrollingKey(key: vaxis.Key) bool {
+    return key.matches('j', .{}) or key.matches('k', .{}) or key.matches('G', .{}) or key.matches('g', .{});
+}
+
+const ScrollingKey = enum {
+    j,
+    k,
+    g,
+    G,
+    None,
+};
+
+pub fn validateScrollingKey(key: vaxis.Key) ScrollingKey {
+    if (key.matches('j', .{})) {
+        return ScrollingKey.j;
+    }
+
+    if (key.matches('k', .{})) {
+        return ScrollingKey.k;
+    }
+
+    if (key.matches('g', .{})) {
+        return ScrollingKey.g;
+    }
+
+    if (key.matches('G', .{})) {
+        return ScrollingKey.G;
+    }
+
+    return ScrollingKey.None;
+}
