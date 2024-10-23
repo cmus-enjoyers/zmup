@@ -8,6 +8,9 @@ const c = @import("root.zig").c;
 const time = @import("misc/time.zig");
 const colors = @import("misc/colors.zig");
 const drawMainView = @import("views/main.zig").drawMainView;
+const ffmpeg = @import("./interop/ffmpeg.zig");
+const laziness = @import("./keybinds/lazy.zig");
+const Metadata = @import("./playlists/metadata.zig").Metadata;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -48,6 +51,7 @@ pub fn main() !void {
 
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
+    c.av_log_set_level(c.AV_LOG_DEBUG);
     c.av_log_set_level(c.AV_LOG_QUIET);
 
     try vx.setTitle(any_writer, "Zig music player");
@@ -57,7 +61,9 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
+
     try sorting.sort(music, sorting.SortMethods.greater);
+
     defer {
         for (music.items) |track| {
             track.deinit();
@@ -66,10 +72,11 @@ pub fn main() !void {
         music.deinit();
     }
 
-    var playlist_view = ScrollView{};
-    var music_view = ScrollView{};
+    var playlist_view = ScrollView{ .vertical_scrollbar = null };
+    var music_view = ScrollView{ .vertical_scrollbar = null };
     var playlist_list = List{ .view = &playlist_view };
     var music_list = List{ .view = &music_view };
+    var music_window: ?vaxis.Window = null;
 
     var selected_view = &playlist_list;
 
@@ -81,9 +88,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches(13, .{})) {
-                    // TODO: optimize playlist loading. pg3d playlist causes
-                    // microfreeze whilie loading it, in cmus it doesn't
-                    _ = try music.items[playlist_list.selected].load();
+                    try music.items[playlist_list.selected].loadUntil(music_window.?.height);
                     selected_view = &music_list;
                 }
 
@@ -103,9 +108,9 @@ pub fn main() !void {
 
         playlist_list.draw(playlist_win, playlist_win.width, music.items.len);
 
-        const music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
+        music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
-        try drawMainView(&playlist_list, music, music_window, &music_list);
+        try drawMainView(&playlist_list, music, music_window.?, &music_list);
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
         // without this program will use 100% of one cpu thread.
