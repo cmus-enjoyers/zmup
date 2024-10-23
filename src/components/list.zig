@@ -1,6 +1,10 @@
 const vaxis = @import("vaxis");
 const std = @import("std");
 
+pub fn isCtrlE(key: vaxis.Key) bool {
+    return key.matches('e', .{ .ctrl = true });
+}
+
 pub const List = struct {
     view: *vaxis.widgets.ScrollView,
     selected: usize = 0,
@@ -27,6 +31,11 @@ pub const List = struct {
                 if (self.selected <= self.view.scroll.y + 1) {
                     self.view.scroll.y -|= 1;
                 }
+            }
+
+            if (isCtrlE(key)) {
+                self.view.scroll.y += 1;
+                self.selected += 1;
             }
 
             if (key.matches('G', .{})) {
