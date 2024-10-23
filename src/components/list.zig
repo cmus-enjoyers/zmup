@@ -46,15 +46,13 @@ pub const List = struct {
             }
 
             if (isCtrlE(key)) {
-                if ()
-
                 self.view.scroll.y += 1;
                 self.selected += 1;
             }
 
             if (isCtrlY(key)) {
-                self.view.scroll.y -= 1;
-                self.selected -= 1;
+                self.view.scroll.y -|= 1;
+                self.selected -|= 1;
             }
 
             if (key.matches('G', .{})) {
@@ -121,4 +119,4 @@ pub fn validateScrollingKey(key: vaxis.Key) ScrollingKey {
     }
 
     return ScrollingKey.None;
-}// }}}
+} // }}}
