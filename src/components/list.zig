@@ -5,8 +5,8 @@ pub fn isCtrlE(key: vaxis.Key) bool {
     return key.matches('e', .{ .ctrl = true });
 }
 
-pub fn isCtrlU(key: vaxis.Key) bool {
-    return key.matches('u', .{ .ctrl = true });
+pub fn isCtrlY(key: vaxis.Key) bool {
+    return key.matches('y', .{ .ctrl = true });
 }
 
 pub const List = struct {
@@ -46,11 +46,13 @@ pub const List = struct {
             }
 
             if (isCtrlE(key)) {
+                if ()
+
                 self.view.scroll.y += 1;
                 self.selected += 1;
             }
 
-            if (isCtrlU(key)) {
+            if (isCtrlY(key)) {
                 self.view.scroll.y -= 1;
                 self.selected -= 1;
             }
@@ -69,7 +71,7 @@ pub const List = struct {
 
     pub fn setRows(self: *List, rows: usize) void {
         self.rows = rows;
-        // TODO: maybe come up with something better
+        // TODO: maybe come up with something better (no)
     }
 
     pub fn draw(
@@ -88,7 +90,7 @@ pub const List = struct {
         });
     }
 };
-
+// {{{
 pub fn isScrollingKey(key: vaxis.Key) bool {
     return key.matches('j', .{}) or key.matches('k', .{}) or key.matches('G', .{}) or key.matches('g', .{});
 }
@@ -119,4 +121,4 @@ pub fn validateScrollingKey(key: vaxis.Key) ScrollingKey {
     }
 
     return ScrollingKey.None;
-}
+}// }}}
