@@ -9,6 +9,14 @@ pub fn isCtrlY(key: vaxis.Key) bool {
     return key.matches('y', .{ .ctrl = true });
 }
 
+pub fn isCtrlD(key: vaxis.Key) bool {
+    return key.matches('d', .{ .ctrl = true });
+}
+
+pub fn windowGetHalfHeight(window: vaxis.Window) usize {
+    return @divFloor(window.height, 2);
+}
+
 pub const List = struct {
     view: *vaxis.widgets.ScrollView,
     selected: usize = 0,
@@ -25,6 +33,11 @@ pub const List = struct {
                 self.selected = 0;
             }
         }
+    }
+
+    pub fn updateScrollAndSelected(self: *List, selected: usize, scroll: usize) void {
+        self.selected = selected;
+        self.view.scroll.y = scroll;
     }
 
     pub fn input(self: *List, key: vaxis.Key) void {
@@ -55,14 +68,19 @@ pub const List = struct {
                 self.selected -|= 1;
             }
 
+            if (isCtrlD(key)) {
+                const @"half height" = windowGetHalfHeight(self.window.?);
+
+                self.view.scroll.y += @"half height";
+                self.selected += @"half height";
+            }
+
             if (key.matches('G', .{})) {
-                self.selected = self.rows.? - 1;
-                self.view.scroll.y = std.math.maxInt(usize);
+                self.updateScrollAndSelected(self.rows.? - 1, std.math.maxInt(usize));
             }
 
             if (key.matches('g', .{})) {
-                self.selected = 0;
-                self.view.scroll.y = 0;
+                self.updateScrollAndSelected(0, 0);
             }
         }
     }
