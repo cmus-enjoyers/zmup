@@ -13,6 +13,10 @@ pub fn isCtrlD(key: vaxis.Key) bool {
     return key.matches('d', .{ .ctrl = true });
 }
 
+pub fn isCtrlU(key: vaxis.Key) bool {
+    return key.matches('u', .{ .ctrl = true });
+}
+
 pub fn windowGetHalfHeight(window: vaxis.Window) usize {
     return @divFloor(window.height, 2);
 }
@@ -75,6 +79,13 @@ pub const List = struct {
                 self.selected += @"half height";
             }
 
+            if (isCtrlU(key)) {
+                const @"half height" = windowGetHalfHeight(self.window.?);
+
+                self.view.scroll.y -|= @"half height";
+                self.selected -|= @"half height";
+            }
+
             if (key.matches('G', .{})) {
                 self.updateScrollAndSelected(self.rows.? - 1, std.math.maxInt(usize));
             }
@@ -83,11 +94,6 @@ pub const List = struct {
                 self.updateScrollAndSelected(0, 0);
             }
         }
-    }
-
-    pub fn setRows(self: *List, rows: usize) void {
-        self.rows = rows;
-        // TODO: maybe come up with something better (no)
     }
 
     pub fn draw(
