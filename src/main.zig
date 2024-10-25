@@ -11,6 +11,7 @@ const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
 const Metadata = @import("./playlists/metadata.zig").Metadata;
+const search = @import("./search/search.zig").search;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -94,6 +95,10 @@ pub fn main() !void {
 
                 if (key.matches(' ', .{})) {
                     selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
+                }
+
+                if (key.matches('/', .{})) {
+                    search(allocator, &music, "vktrenokh");
                 }
 
                 selected_view.input(key);
