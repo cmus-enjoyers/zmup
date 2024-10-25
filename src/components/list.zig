@@ -44,6 +44,16 @@ pub const List = struct {
         self.view.scroll.y = scroll;
     }
 
+    pub fn substrate(self: *List, by: usize) void {
+        self.view.scroll.y -|= by;
+        self.selected -|= by;
+    }
+
+    pub fn add(self: *List, by: usize) void {
+        self.view.scroll.y += by;
+        self.selected += by;
+    }
+
     pub fn input(self: *List, key: vaxis.Key) void {
         if (self.window) |value| {
             if (key.matches('j', .{})) {
@@ -73,17 +83,11 @@ pub const List = struct {
             }
 
             if (isCtrlD(key)) {
-                const @"half height" = windowGetHalfHeight(self.window.?);
-
-                self.view.scroll.y += @"half height";
-                self.selected += @"half height";
+                self.add(windowGetHalfHeight(self.window.?));
             }
 
             if (isCtrlU(key)) {
-                const @"half height" = windowGetHalfHeight(self.window.?);
-
-                self.view.scroll.y -|= @"half height";
-                self.selected -|= @"half height";
+                self.substrate(windowGetHalfHeight(self.window.?));
             }
 
             if (key.matches('G', .{})) {
