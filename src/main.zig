@@ -82,8 +82,8 @@ pub fn main() !void {
     var music_window: ?vaxis.Window = null;
 
     var selected_view = &playlist_list;
-    var last_keybind = "";
-    const time_ms = 1000 * std.time.ms_per_s;
+    var last_keybind: []const u8 = "";
+    const time_ms = 1000 * std.time.ns_per_ms;
 
     while (true) {
         switch (loop.nextEvent()) {
@@ -97,6 +97,7 @@ pub fn main() !void {
                     const thread_sleep = try std.Thread.spawn(.{}, timeout.setTimeout, .{ time_ms, &last_keybind });
                     thread_sleep.detach();
                 }
+
                 try keybinds.input(key, &last_keybind, &music);
 
                 if (key.matches(13, .{})) {
