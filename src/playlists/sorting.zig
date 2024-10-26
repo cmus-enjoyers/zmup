@@ -6,7 +6,7 @@ pub const SortMethods = enum {
     greater,
 };
 
-pub fn sort(list: std.ArrayList(*playlists.Playlist), sort_type: SortMethods) !void {
+pub fn sort(list: *const std.ArrayList(*playlists.Playlist), sort_type: SortMethods) !void {
     const list_items = list.items[0..];
 
     switch (sort_type) {

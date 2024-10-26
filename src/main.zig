@@ -11,6 +11,8 @@ const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
 const Metadata = @import("./playlists/metadata.zig").Metadata;
+const timeout = @import("keybinds/timeout.zig");
+const keybinds = @import("keybinds/sorting.zig");
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -61,9 +63,9 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     const music = try playlists.getPlaylists(allocator, &playlist_paths);
-    try sorting.sort(music, sorting.SortMethods.greater);
+    try sorting.sort(&music, sorting.SortMethods.greater);
 
-    try sorting.sort(music, sorting.SortMethods.greater);
+    try sorting.sort(&music, sorting.SortMethods.greater);
 
     defer {
         for (music.items) |track| {
@@ -80,6 +82,8 @@ pub fn main() !void {
     var music_window: ?vaxis.Window = null;
 
     var selected_view = &playlist_list;
+    var last_keybind = "";
+    const time_ms = 1000 * std.time.ms_per_s;
 
     while (true) {
         switch (loop.nextEvent()) {
@@ -87,23 +91,14 @@ pub fn main() !void {
                 if (key.matches('q', .{})) {
                     break;
                 }
-                
+
                 if (key.matches('s', .{})) {
                     last_keybind = "s";
-                    const thread_sleep = try std.Thread.spawn(.{}, timeout, .{ time_ms, &last_keybind });
+                    const thread_sleep = try std.Thread.spawn(.{}, timeout.setTimeout, .{ time_ms, &last_keybind });
                     thread_sleep.detach();
                 }
+                try keybinds.input(key, &last_keybind, &music);
 
-                if (key.matches('j', .{}) and std.mem.eql(u8, last_keybind, "s")) {
-                    try sorting.sort(music, sorting.SortMethods.greater);
-                    last_keybind = "";
-                }
-
-                if (key.matches('k', .{}) and std.mem.eql(u8, last_keybind, "s")) {
-                    try sorting.sort(music, sorting.SortMethods.less);
-                    last_keybind = "";
-                }
-                
                 if (key.matches(13, .{})) {
                     try music.items[playlist_list.selected].loadUntil(music_window.?.height);
                     selected_view = &music_list;
@@ -137,9 +132,4 @@ pub fn main() !void {
 
         try vx.render(any_writer);
     }
-}
-
-fn timeout(time_ms: u64, last_keybind: *[]const u8) void {
-    std.time.sleep(time_ms);
-    last_keybind.* = "";
 }
