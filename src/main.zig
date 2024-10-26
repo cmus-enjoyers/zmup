@@ -61,7 +61,7 @@ pub fn main() !void {
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
-    const music = try playlists.getPlaylists(allocator, &playlist_paths);
+    var music = try playlists.getPlaylists(allocator, &playlist_paths);
 
     try sorting.sort(music, sorting.SortMethods.greater);
 
@@ -98,7 +98,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches('/', .{})) {
-                    search(allocator, &music, "vktrenokh");
+                    _ = try search(allocator, &music, "vktrenokh");
                 }
 
                 selected_view.input(key);
