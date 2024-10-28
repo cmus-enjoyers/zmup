@@ -6,7 +6,7 @@ const vaxis = @import("vaxis");
 const time = @import("../misc/time.zig");
 
 fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) !void {
-    if (selected_index > music.items.len) {
+    if (selected_index >= music.items.len) {
         return;
     }
 
