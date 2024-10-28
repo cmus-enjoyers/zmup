@@ -98,7 +98,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches('/', .{})) {
-                    _ = try search(allocator, &music, "vktrenokh");
+                    music = try search(allocator, &music, "vktrenokh");
                 }
 
                 selected_view.input(key);
