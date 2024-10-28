@@ -92,7 +92,7 @@ pub fn main() !void {
 
                 if (key.matches('s', .{})) {
                     last_keybind = "s";
-                    const thread_sleep = try std.Thread.spawn(.{}, timeout.setTimeout, .{ time_ms, &last_keybind });
+                    const thread_sleep = try std.Thread.spawn(.{}, timeout.setResetTimeout, .{ time_ms, &last_keybind });
                     thread_sleep.detach();
                 }
 
