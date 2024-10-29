@@ -99,7 +99,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches('/', .{})) {
-                    music = try search(allocator, &music, "vk_____________treenokh");
+                    music_to_display = try search(allocator, &music, "vk_____________treenokh");
                     playlist_list.window.?.clear();
                 }
 
@@ -121,7 +121,7 @@ pub fn main() !void {
 
         music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
-        try drawMainView(&playlist_list, music, music_window.?, &music_list);
+        try drawMainView(&playlist_list, music_to_display, music_window.?, &music_list);
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
         // without this program will use 100% of one cpu thread.
