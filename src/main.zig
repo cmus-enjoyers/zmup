@@ -52,7 +52,6 @@ pub fn main() !void {
 
     try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
 
-    c.av_log_set_level(c.AV_LOG_DEBUG);
     c.av_log_set_level(c.AV_LOG_QUIET);
 
     try vx.setTitle(any_writer, "Zig music player");
@@ -62,6 +61,8 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     var music = try playlists.getPlaylists(allocator, &playlist_paths);
+    var music_to_display = music;
+    _ = &music_to_display;
 
     try sorting.sort(music, sorting.SortMethods.greater);
 
@@ -100,6 +101,10 @@ pub fn main() !void {
                 if (key.matches('/', .{})) {
                     music = try search(allocator, &music, "vk_____________treenokh");
                     playlist_list.window.?.clear();
+                }
+
+                if (key.matches('r', .{})) {
+                    vx.queueRefresh();
                 }
 
                 selected_view.input(key);
