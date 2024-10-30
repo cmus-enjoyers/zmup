@@ -64,6 +64,8 @@ pub fn main() !void {
     var music_to_display = music;
     _ = &music_to_display;
 
+    var search_input: ?TextInput = null;
+
     try sorting.sort(music, sorting.SortMethods.greater);
 
     defer {
@@ -99,6 +101,7 @@ pub fn main() !void {
                 }
 
                 if (key.matches('/', .{})) {
+                    search_input = TextInput.init(allocator, &vx.unicode);
                     music_to_display = try search(allocator, &music, "vk_____________treenokh");
                     playlist_list.window.?.clear();
                 }
@@ -122,6 +125,21 @@ pub fn main() !void {
         music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
         try drawMainView(&playlist_list, music_to_display, music_window.?, &music_list);
+
+        if (search_input) |*input| {
+            const input_win = win.child(.{
+                .x_off = win.width / 2 - 20,
+                .y_off = win.height / 2 - 3,
+                .width = .{ .limit = 40 },
+                .height = .{ .limit = 3 },
+                .border = .{
+                    .where = .all,
+                    .style = .{ .fg = .{ .index = 2 } },
+                },
+            });
+
+            input.draw(input_win);
+        }
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
         // without this program will use 100% of one cpu thread.
