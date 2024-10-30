@@ -91,25 +91,27 @@ pub fn main() !void {
                     break;
                 }
 
-                if (key.matches(13, .{})) {
-                    try music.items[playlist_list.selected].loadUntil(music_window.?.height);
-                    selected_view = &music_list;
-                }
+                if (search_input) |*input| {
+                    try input.update(.{ .key_press = key });
+                } else {
+                    if (key.matches(13, .{})) {
+                        try music.items[playlist_list.selected].loadUntil(music_window.?.height);
+                        selected_view = &music_list;
+                    }
 
-                if (key.matches(' ', .{})) {
-                    selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
-                }
+                    if (key.matches(' ', .{})) {
+                        selected_view = if (std.meta.eql(selected_view, &music_list)) &playlist_list else &music_list;
+                    }
 
-                if (key.matches('/', .{})) {
-                    search_input = TextInput.init(allocator, &vx.unicode);
-                    music_to_display = try search(allocator, &music, "vk_____________treenokh");
-                    playlist_list.window.?.clear();
-                }
+                    if (key.matches('/', .{})) {
+                        search_input = TextInput.init(allocator, &vx.unicode);
+                        playlist_list.window.?.clear();
+                    }
 
-                if (key.matches('r', .{})) {
-                    vx.queueRefresh();
+                    if (key.matches('r', .{})) {
+                        vx.queueRefresh();
+                    }
                 }
-
                 selected_view.input(key);
             },
             .winsize => |ws| try vx.resize(allocator, any_writer, ws),
