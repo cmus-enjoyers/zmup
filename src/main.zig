@@ -11,7 +11,7 @@ const drawMainView = @import("views/main.zig").drawMainView;
 const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
 const Metadata = @import("./playlists/metadata.zig").Metadata;
-const search = @import("./search/search.zig").search;
+const search = @import("./search/keybinds.zig").input;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -62,7 +62,6 @@ pub fn main() !void {
 
     var music = try playlists.getPlaylists(allocator, &playlist_paths);
     var music_to_display = music;
-    _ = &music_to_display;
 
     var search_input: ?TextInput = null;
 
@@ -87,13 +86,13 @@ pub fn main() !void {
     while (true) {
         switch (loop.nextEvent()) {
             .key_press => |key| {
-                if (key.matches('q', .{})) {
-                    break;
-                }
-
-                if (search_input) |*input| {
-                    try input.update(.{ .key_press = key });
+                if (search_input != null) {
+                    try search(allocator, key, &search_input, &music_to_display, &music);
                 } else {
+                    if (key.matches('q', .{})) {
+                        break;
+                    }
+
                     if (key.matches(13, .{})) {
                         try music.items[playlist_list.selected].loadUntil(music_window.?.height);
                         selected_view = &music_list;
