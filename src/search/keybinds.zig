@@ -3,6 +3,11 @@ const vaxis = @import("vaxis");
 const Playlist = @import("../playlists/playlists.zig").Playlist;
 const search = @import("search.zig").search;
 
+fn clearTextInput(text_input: *?vaxis.widgets.TextInput) void {
+    text_input.*.?.deinit();
+    text_input.* = null;
+}
+
 pub fn input(
     allocator: std.mem.Allocator,
     key: vaxis.Key,
@@ -13,8 +18,7 @@ pub fn input(
     try text_input.*.?.update(.{ .key_press = key });
 
     if (key.matches(27, .{})) {
-        text_input.*.?.deinit();
-        text_input.* = null;
+        clearTextInput(text_input);
     }
 
     if (key.matches(13, .{})) {
@@ -23,7 +27,6 @@ pub fn input(
             music,
             try text_input.*.?.buf.toOwnedSlice(),
         );
-        text_input.*.?.deinit();
-        text_input.* = null;
+        clearTextInput(text_input);
     }
 }
