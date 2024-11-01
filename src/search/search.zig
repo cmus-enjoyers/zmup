@@ -1,5 +1,9 @@
 const std = @import("std");
 const Playlist = @import("../playlists/playlists.zig").Playlist;
+const vaxis = @import("vaxis");
+
+const TextInput = vaxis.widgets.TextInput;
+const Unicode = vaxis.Unicode;
 
 pub fn search(allocator: std.mem.Allocator, list: *std.ArrayList(*Playlist), string: []const u8) !std.ArrayList(*Playlist) {
     var filtered = std.ArrayList(*Playlist).init(allocator);
@@ -11,4 +15,8 @@ pub fn search(allocator: std.mem.Allocator, list: *std.ArrayList(*Playlist), str
     }
 
     return filtered;
+}
+
+pub fn createTextInput(allocator: std.mem.Allocator, ptr: *?TextInput, unicode: *Unicode) void {
+    ptr.* = TextInput.init(allocator, unicode);
 }

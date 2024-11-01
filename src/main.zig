@@ -12,6 +12,7 @@ const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
 const Metadata = @import("./playlists/metadata.zig").Metadata;
 const search = @import("./search/keybinds.zig").input;
+const createSearchInput = @import("./search/input.zig").createSearchInput;
 
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
@@ -103,8 +104,7 @@ pub fn main() !void {
                     }
 
                     if (key.matches('/', .{})) {
-                        search_input = TextInput.init(allocator, &vx.unicode);
-                        playlist_list.window.?.clear();
+                        createSearchInput(allocator, &search_input, &vx.unicode);
                     }
 
                     if (key.matches('r', .{})) {
