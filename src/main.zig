@@ -88,7 +88,7 @@ pub fn main() !void {
         switch (loop.nextEvent()) {
             .key_press => |key| {
                 if (search_input != null) {
-                    try search(allocator, key, &search_input, &music_to_display, &music);
+                    try search(allocator, key, &search_input, &music_to_display, &music, playlist_list.window.?);
                 } else {
                     if (key.matches('q', .{})) {
                         break;

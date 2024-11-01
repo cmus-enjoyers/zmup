@@ -8,12 +8,18 @@ fn clearTextInput(text_input: *?vaxis.widgets.TextInput) void {
     text_input.* = null;
 }
 
+fn fixWindow(window: vaxis.Window) void {
+    window.clear();
+    window.hideCursor();
+}
+
 pub fn input(
     allocator: std.mem.Allocator,
     key: vaxis.Key,
     text_input: *?vaxis.widgets.TextInput,
     music_to_display: *std.ArrayList(*Playlist),
     music: *std.ArrayList(*Playlist),
+    window: vaxis.Window,
 ) !void {
     try text_input.*.?.update(.{ .key_press = key });
 
@@ -28,5 +34,6 @@ pub fn input(
             try text_input.*.?.buf.toOwnedSlice(),
         );
         clearTextInput(text_input);
+        fixWindow(window);
     }
 }
