@@ -62,7 +62,6 @@ pub fn main() !void {
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
     var music = try playlists.getPlaylists(allocator, &playlist_paths);
-    var music_to_display = music;
 
     var search_input: ?TextInput = null;
 
@@ -82,13 +81,16 @@ pub fn main() !void {
     var music_list = List{ .view = &music_view };
     var music_window: ?vaxis.Window = null;
 
+    var search_indices: ?std.ArrayList(usize) = null; // TODO: fix memory leak later here
+    var selected_search_index = 0;
+
     var selected_view = &playlist_list;
 
     while (true) {
         switch (loop.nextEvent()) {
             .key_press => |key| {
                 if (search_input != null) {
-                    try search(allocator, key, &search_input, &music_to_display, &music, playlist_list.window.?);
+                    try search(allocator, key, &search_input, &search_indices, &music, playlist_list.window.?);
                 } else {
                     if (key.matches('q', .{})) {
                         break;
@@ -110,6 +112,10 @@ pub fn main() !void {
                     if (key.matches('r', .{})) {
                         vx.queueRefresh();
                     }
+
+                    if (key.matches('n', .{})) {
+                        selected_search_index = (selected_search_index + 1) % search_indices.?.items.len;
+                    }
                 }
                 selected_view.input(key);
             },
@@ -125,7 +131,7 @@ pub fn main() !void {
 
         music_window = ui.drawMusicWin(win, playlist_win.width + 2, std.meta.eql(selected_view, &music_list));
 
-        try drawMainView(&playlist_list, music_to_display, music_window.?, &music_list);
+        try drawMainView(&playlist_list, music, music_window.?, &music_list);
 
         if (search_input) |*input| {
             const input_win = win.child(.{

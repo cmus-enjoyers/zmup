@@ -17,7 +17,7 @@ pub fn input(
     allocator: std.mem.Allocator,
     key: vaxis.Key,
     text_input: *?vaxis.widgets.TextInput,
-    music_to_display: *std.ArrayList(*Playlist),
+    music_indices: *?std.ArrayList(usize),
     music: *std.ArrayList(*Playlist),
     window: vaxis.Window,
 ) !void {
@@ -28,7 +28,7 @@ pub fn input(
     }
 
     if (key.matches(13, .{})) {
-        music_to_display.* = try search(
+        music_indices.* = try search(
             allocator,
             music,
             try text_input.*.?.buf.toOwnedSlice(),

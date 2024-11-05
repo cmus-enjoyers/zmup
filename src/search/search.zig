@@ -5,16 +5,16 @@ const vaxis = @import("vaxis");
 const TextInput = vaxis.widgets.TextInput;
 const Unicode = vaxis.Unicode;
 
-pub fn search(allocator: std.mem.Allocator, list: *std.ArrayList(*Playlist), string: []const u8) !std.ArrayList(*Playlist) {
-    var filtered = std.ArrayList(*Playlist).init(allocator);
+pub fn search(allocator: std.mem.Allocator, list: *std.ArrayList(*Playlist), string: []const u8) !std.ArrayList(usize) {
+    var indicies = std.ArrayList(usize).init(allocator);
 
-    for (list.items) |item| {
+    for (list.items, 0..) |item, i| {
         if (std.ascii.indexOfIgnoreCasePos(item.name, 0, string) != null) {
-            try filtered.append(item);
+            try indicies.append(i);
         }
     }
 
-    return filtered;
+    return indicies;
 }
 
 pub fn createTextInput(allocator: std.mem.Allocator, ptr: *?TextInput, unicode: *Unicode) void {
