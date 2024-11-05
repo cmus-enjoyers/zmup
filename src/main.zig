@@ -82,7 +82,7 @@ pub fn main() !void {
     var music_window: ?vaxis.Window = null;
 
     var search_indices: ?std.ArrayList(usize) = null; // TODO: fix memory leak later here
-    var selected_search_index = 0;
+    var selected_search_index: usize = 0;
 
     var selected_view = &playlist_list;
 
@@ -115,6 +115,7 @@ pub fn main() !void {
 
                     if (key.matches('n', .{})) {
                         selected_search_index = (selected_search_index + 1) % search_indices.?.items.len;
+                        playlist_list.selected = search_indices.?.items[selected_search_index];
                     }
                 }
                 selected_view.input(key);
