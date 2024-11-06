@@ -135,6 +135,10 @@ pub fn main() !void {
             search_ui.draw(win, input);
         }
 
+        if (selected_search_index > 0) {
+            playlist_list.view.scroll.y = search_indices.?.items[selected_search_index];
+        }
+
         // Maybe add this later when we will use non blocking loop.tryEvent().
         // without this program will use 100% of one cpu thread.
         // For now only event-driven rendering
