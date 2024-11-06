@@ -12,6 +12,7 @@ const ffmpeg = @import("./interop/ffmpeg.zig");
 const laziness = @import("./keybinds/lazy.zig");
 const Metadata = @import("./playlists/metadata.zig").Metadata;
 const search = @import("./search/keybinds.zig").input;
+const search_ui = @import("./search/ui.zig");
 const createSearchInput = @import("./search/input.zig").createSearchInput;
 
 const Cell = vaxis.Cell;
@@ -109,10 +110,6 @@ pub fn main() !void {
                         createSearchInput(allocator, &search_input, &vx.unicode);
                     }
 
-                    if (key.matches('r', .{})) {
-                        vx.queueRefresh();
-                    }
-
                     if (key.matches('n', .{})) {
                         selected_search_index = (selected_search_index + 1) % search_indices.?.items.len;
                         playlist_list.selected = search_indices.?.items[selected_search_index];
@@ -135,18 +132,7 @@ pub fn main() !void {
         try drawMainView(&playlist_list, music, music_window.?, &music_list);
 
         if (search_input) |*input| {
-            const input_win = win.child(.{
-                .x_off = win.width / 2 - 20,
-                .y_off = win.height / 2 - 3,
-                .width = .{ .limit = 40 },
-                .height = .{ .limit = 3 },
-                .border = .{
-                    .where = .all,
-                    .style = .{ .fg = .{ .index = 2 } },
-                },
-            });
-
-            input.draw(input_win);
+            search_ui.draw(win, input);
         }
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
