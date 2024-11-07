@@ -20,7 +20,7 @@ pub fn input(
     music_indices: *?std.ArrayList(usize),
     music: *std.ArrayList(*Playlist),
     window: vaxis.Window,
-) !void {
+) !?bool {
     try text_input.*.?.update(.{ .key_press = key });
 
     if (key.matches(27, .{})) {
@@ -35,5 +35,8 @@ pub fn input(
         );
         clearTextInput(text_input);
         fixWindow(window);
+        return true;
     }
+
+    return null;
 }

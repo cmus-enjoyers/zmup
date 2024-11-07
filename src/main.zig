@@ -83,7 +83,7 @@ pub fn main() !void {
     var music_window: ?vaxis.Window = null;
 
     var search_indices: ?std.ArrayList(usize) = null; // TODO: fix memory leak later here
-    var selected_search_index: usize = 0;
+    var selected_search_index: ?usize = null;
 
     var selected_view = &playlist_list;
 
@@ -91,7 +91,12 @@ pub fn main() !void {
         switch (loop.nextEvent()) {
             .key_press => |key| {
                 if (search_input != null) {
-                    try search(allocator, key, &search_input, &search_indices, &music, playlist_list.window.?);
+                    if (try search(allocator, key, &search_input, &search_indices, &music, playlist_list.window.?) == true) {
+                        selected_search_index = 0;
+                        playlist_list.view.scroll.y = search_indices.?.items[0];
+                        playlist_list.selected = search_indices.?.items[0];
+                        // TODO: refactor this later (dry)
+                    }
                 } else {
                     if (key.matches('q', .{})) {
                         break;
@@ -110,9 +115,11 @@ pub fn main() !void {
                         createSearchInput(allocator, &search_input, &vx.unicode);
                     }
 
-                    if (key.matches('n', .{})) {
-                        selected_search_index = (selected_search_index + 1) % search_indices.?.items.len;
-                        playlist_list.selected = search_indices.?.items[selected_search_index];
+                    if (selected_search_index) |*index| {
+                        if (key.matches('n', .{})) {
+                            index.* = (index.* + 1) % search_indices.?.items.len;
+                            playlist_list.selected = search_indices.?.items[index.*];
+                        }
                     }
                 }
                 selected_view.input(key);
@@ -135,8 +142,10 @@ pub fn main() !void {
             search_ui.draw(win, input);
         }
 
-        if (selected_search_index > 0) {
-            playlist_list.view.scroll.y = search_indices.?.items[selected_search_index];
+        if (selected_search_index) |index| {
+            if (index > 0) {
+                playlist_list.view.scroll.y = search_indices.?.items[index];
+            }
         }
 
         // Maybe add this later when we will use non blocking loop.tryEvent().
