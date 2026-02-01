@@ -1,0 +1,26 @@
+                                                                                                               thread 51550 panic: switch on corrupt value
+                                                                                                                                                          /home/jcatzded/.cache/zig/p/vaxis-0.5.1-BWNV_Bw_CQAIVNh1ekGVzbip25CYBQ_J3kgABnYGFnI4/src/Vaxis.zig:564:21: 0x11698aa in render (main.zig)
+                                                                                                                                    switch (cell.style.fg) {
+                                                                                                                                                                                ^
+      /home/jcatzded/prog/zmup/src/main.zig:122:22: 0x1182ce4 in main (main.zig)
+                                                                                        try vx.render(any_writer);
+                                                                                                                                       ^
+                                                                                                                                        /usr/lib/zig/std/start.zig:627:37: 0x1184811 in main (std.zig)
+                                       const result = root.main() catch |err| {
+                                                                                                                   ^
+                                                                                                                    ???:?:?: 0x7fccb9227634 in ??? (libc.so.6)
+                                                                                                                                                              Unwind information for `libc.so.6:0x7fccb9227634` was not available, trace may be incomplete
+
+                                                                               ???:?:?: 0x7fccb92276e8 in ??? (libc.so.6)
+                                                                                                                         ???:?:?: 0x124ab54 in ??? (???)
+                                                                                                                                                        run
+                                                                                                                                                           └─ run exe zmup failure
+       error: the following command terminated unexpectedly:
+                                                            /home/jcatzded/prog/zmup/zig-out/bin/zmup
+
+                                                                                                     Build Summary: 8/10 steps succeeded; 1 failed
+                                                                                                                                                  run transitive failure
+                                                                                                                                                                        └─ run exe zmup failure
+
+                    error: the following build command failed with exit code 1:
+                                                                               .zig-cache/o/b125e6382df99de36fb9e0faf728187a/build /usr/bin/zig /usr/lib/zig /home/jcatzded/prog/zmup .zig-cache /home/jcatzded/.cache/zig --seed 0x2ee9f73b -Z1429e4c92876c9e5 run

@@ -6,11 +6,11 @@ const vaxis = @import("vaxis");
 const time = @import("../misc/time.zig");
 
 fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) !void {
-    std.debug.assert(selected_index < music.items.len);
-    std.debug.print(
-        "selected_index={}, music.items.len={}\n",
-        .{ selected_index, music.items.len },
-    );
+    // std.debug.assert(selected_index < music.items.len);
+    // std.debug.print(
+    //     "selected_index={}, music.items.len={}\n",
+    //     .{ selected_index, music.items.len },
+    // );
 
     if (music.items[selected_index].content) |content| {
         music_window.clear();
