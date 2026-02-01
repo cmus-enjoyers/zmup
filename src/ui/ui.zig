@@ -3,14 +3,14 @@ const vaxis = @import("vaxis");
 
 const Window = vaxis.Window;
 
-pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: usize, y_offset: usize) !void {
+pub fn drawText(win: vaxis.Window, text: []const u8, x_offset: u16, y_offset: u16) !void {
     const style: vaxis.Style = .{ .fg = .{
         .rgb = .{255} ** 3,
     } };
 
     const segment: vaxis.Segment = .{ .text = text, .style = style };
 
-    _ = try win.printSegment(segment, .{ .row_offset = y_offset, .col_offset = x_offset });
+    _ = win.printSegment(segment, .{ .row_offset = y_offset, .col_offset = x_offset });
 }
 
 pub const white_rgb = .{255} ** 3;
@@ -47,15 +47,15 @@ pub fn border(condition: bool) vaxis.Window.BorderOptions {
     return if (condition == true) green_border else white_border;
 }
 
-pub fn drawPlaylistWin(parent: Window, part: usize, is_selected: bool) Window {
+pub fn drawPlaylistWin(parent: Window, part: u16, is_selected: bool) Window {
     return parent.child(.{
         .border = border(is_selected),
-        .width = .{ .limit = parent.width / part },
-        .height = .{ .limit = parent.height },
+        .width =  parent.width / part,
+        .height = parent.height,
     });
 }
 
-pub fn drawMusicWin(parent: Window, off: usize, is_selected: bool) Window {
+pub fn drawMusicWin(parent: Window, off: i17, is_selected: bool) Window {
     return parent.child(.{
         .border = border(is_selected),
         .x_off = off,
