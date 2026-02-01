@@ -1,10 +1,11 @@
 .{
-    .name = "zmup",
+    .fingerprint = 0x67843b180f306583,
+    .name = .zmup,
     .version = "0.0.0",
     .dependencies = .{
         .vaxis = .{
-            .url = "https://github.com/rockorager/libvaxis/archive/refs/tags/v0.5.1.tar.gz",
-            .hash = "1220de23a3240e503397ea579de4fd85db422f537e10036ef74717c50164475813ce",
+            .url = "git+https://github.com/rockorager/libvaxis.git#8a9c2d5e1b3778f1ea43c9bd5d325cfa72016584",
+            .hash = "vaxis-0.5.1-BWNV_Bw_CQAIVNh1ekGVzbip25CYBQ_J3kgABnYGFnI4",
         },
     },
     .paths = .{

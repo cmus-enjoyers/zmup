@@ -30,11 +30,12 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
 
-    var tty = try vaxis.Tty.init();
+    var buffer: [1024]u8 = undefined;
+    var tty = try vaxis.Tty.init(&buffer);
     defer tty.deinit();
 
     var vx = try vaxis.init(allocator, .{});
-    defer vx.deinit(allocator, tty.anyWriter());
+    defer vx.deinit(allocator, tty.writer());
 
     var loop: vaxis.Loop(Event) = .{
         .tty = &tty,
@@ -45,7 +46,7 @@ pub fn main() !void {
     try loop.start();
     defer loop.stop();
 
-    const any_writer = tty.anyWriter();
+    const any_writer = tty.writer();
 
     try vx.enterAltScreen(any_writer);
 
@@ -60,7 +61,7 @@ pub fn main() !void {
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
-    const music = try playlists.getPlaylists(allocator, &playlist_paths);
+    var music = try playlists.getPlaylists(allocator, &playlist_paths);
 
     try sorting.sort(music, sorting.SortMethods.greater);
 
@@ -69,7 +70,7 @@ pub fn main() !void {
             track.deinit();
             allocator.destroy(track);
         }
-        music.deinit();
+        music.deinit(allocator);
     }
 
     var playlist_view = ScrollView{ .vertical_scrollbar = null };

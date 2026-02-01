@@ -6,6 +6,12 @@ const vaxis = @import("vaxis");
 const time = @import("../misc/time.zig");
 
 fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) !void {
+    // std.debug.assert(selected_index < music.items.len);
+    // std.debug.print(
+    //     "selected_index={}, music.items.len={}\n",
+    //     .{ selected_index, music.items.len },
+    // );
+
     if (music.items[selected_index].content) |content| {
         music_window.clear();
 
@@ -14,7 +20,7 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
         for (content.items, 0..) |track, i| {
             music_list.view.writeCell(music_window, 0, i, vaxis.Cell{
                 .char = .{
-                    .width = track.name.len,
+                    .width = @intCast(track.name.len),
                     .grapheme = track.name,
                 },
                 .style = ui.style_list_item(music_list.selected == i),
@@ -23,8 +29,8 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
 
         const duration = try music.items[selected_index].getReadableDuration();
 
-        _ = try music_window.printSegment(.{ .text = duration }, .{
-            .col_offset = music_window.width - duration.len,
+        _ = music_window.printSegment(.{ .text = duration }, .{
+            .col_offset = @intCast(music_window.width - duration.len),
         });
     } else {
         music_window.clear();
@@ -41,7 +47,7 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
     for (music.items, 0..) |item, i| {
         playlist_list.view.writeCell(playlist_list.window.?, 0, i, vaxis.Cell{
             .char = .{
-                .width = item.name.len,
+                .width = @intCast(item.name.len),
                 .grapheme = item.name,
             },
             .style = ui.style_list_item(playlist_list.selected == i),
@@ -54,8 +60,8 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
 
     try drawPlaylistContent(music, playlist_list.selected, music_window, music_list);
 
-    _ = try music_window.printSegment(.{ .text = &x }, .{
+    _ = music_window.printSegment(.{ .text = &x }, .{
         .row_offset = music_window.height - 1,
-        .col_offset = music_window.width - x[0..std.mem.indexOf(u8, &x, &[_]u8{0}).?].len,
+        .col_offset = @intCast(music_window.width - x[0..std.mem.indexOf(u8, &x, &[_]u8{0}).?].len),
     });
 }

@@ -31,7 +31,7 @@ pub const Playlist = struct {
 
     pub fn deinit(self: Playlist) void {
         if (self.content) |content| {
-            content.deinit();
+            content.deinit(self.allocator);
             self.allocator.destroy(content);
         }
 
@@ -63,7 +63,7 @@ pub const Playlist = struct {
             return content.items;
         }
 
-        var content = std.ArrayList(*Track).init(self.allocator);
+        var content = std.ArrayList(*Track).initCapacity(self.allocator, 0);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
 
@@ -104,7 +104,7 @@ pub const Playlist = struct {
             self.duration += metadata.duration;
         }
 
-        try self.content.?.append(track);
+        try self.content.?.append(self.allocator, track);
     }
 
     pub fn continueLoading(self: *Playlist) !void {
@@ -119,7 +119,7 @@ pub const Playlist = struct {
 
     pub fn loadUntil(self: *Playlist, until: usize) !void {
         const content = try self.allocator.create(std.ArrayList(*Track));
-        content.* = std.ArrayList(*Track).init(self.allocator);
+        content.* = try std.ArrayList(*Track).initCapacity(self.allocator, 0);
 
         const file = try std.fs.openFileAbsolute(self.path, .{});
         defer file.close();
@@ -173,17 +173,17 @@ pub const Playlist = struct {
     }
 };
 
-pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8) !void {
-    const ptr = try list.allocator.create(Playlist);
+pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8, allocator: Allocator) !void {
+    const ptr = try allocator.create(Playlist);
 
-    ptr.* = try Playlist.init(list.allocator, path);
+    ptr.* = try Playlist.init(allocator, path);
 
-    try list.append(ptr);
+    try list.append(allocator, ptr);
 }
 
-pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8) !void {
-    var sub_playlist = std.ArrayList(*Playlist).init(list.allocator);
-    defer sub_playlist.deinit();
+pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8, allocator: Allocator) !void {
+    var sub_playlist = try std.ArrayList(*Playlist).initCapacity(allocator, 0);
+    defer sub_playlist.deinit(allocator);
 
     var dir = try fs.openDirAbsolute(path, .{ .iterate = true });
     defer dir.close();
@@ -193,20 +193,20 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
     while (try iterator.next()) |item| {
         switch (item.kind) {
             .file => {
-                const item_path = std.fs.path.join(list.allocator, &[2][]const u8{ path, item.name }) catch continue;
-                defer list.allocator.free(item_path);
+                const item_path = std.fs.path.join(allocator, &[2][]const u8{ path, item.name }) catch continue;
+                defer allocator.free(item_path);
 
-                appendPlaylist(&sub_playlist, item_path) catch continue;
+                appendPlaylist(&sub_playlist, item_path, allocator) catch continue;
             },
             else => {},
         }
     }
 
-    try list.appendSlice(sub_playlist.items);
+    try list.appendSlice(allocator, sub_playlist.items);
 }
 
 pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
-    var list = std.ArrayList(*Playlist).init(allocator);
+    var list = try std.ArrayList(*Playlist).initCapacity(allocator, 0);
 
     const cwd = fs.cwd();
 
@@ -214,8 +214,8 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
         const stat = cwd.statFile(path) catch continue;
 
         switch (stat.kind) {
-            .file => appendPlaylist(&list, path) catch continue,
-            .directory => appendPlaylistCollection(&list, path) catch continue,
+            .file => appendPlaylist(&list, path, allocator) catch continue,
+            .directory => appendPlaylistCollection(&list, path, allocator) catch continue,
             else => {},
         }
     }
@@ -224,7 +224,7 @@ pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.Arra
 }
 
 test "Playlist" {
-    var playlist = try Playlist.init(std.testing.allocator, "/home/vktrenokh/.config/cmus/playlists/bed");
+    var playlist = try Playlist.init(std.testing.allocator, "/home/jcatzded/.config/cmus/playlists/bed");
     defer playlist.deinit();
 
     try std.testing.expect(playlist.content == null);
@@ -235,8 +235,9 @@ test "Playlist" {
     try std.testing.expect(playlist.content != null);
 
     var paths: [1][]const u8 = .{
-        "/home/vktrenokh/.config/cmus/playlists/",
+        "/home/jcatzded/.config/cmus/playlists/",
     };
+
     const playlists = try getPlaylists(std.testing.allocator, &paths);
     defer {
         for (playlists.items) |item| {
@@ -247,3 +248,4 @@ test "Playlist" {
     }
     try std.testing.expect(playlists.items.len > 0);
 }
+
