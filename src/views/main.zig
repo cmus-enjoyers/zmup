@@ -42,15 +42,7 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
 }
 
 pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music_window: vaxis.Window, music_list: *List) !void {
-    for (music.items, 0..) |item, i| {
-        playlist_list.view.writeCell(playlist_list.window.?, 0, i, vaxis.Cell{
-            .char = .{
-                .width = @intCast(item.name.len),
-                .grapheme = item.name,
-            },
-            .style = ui.style_list_item(playlist_list.selected == i),
-        });
-    } else {
+    if (music.items.len == 0) {
         if (playlist_list.window) |window| {
             const empty_text = "No playlists :(";
 
@@ -59,6 +51,16 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
                 empty_text.len,
                 1,
             ), empty_text, 0, 0);
+        }
+    } else {
+        for (music.items, 0..) |item, i| {
+            playlist_list.view.writeCell(playlist_list.window.?, 0, i, vaxis.Cell{
+                .char = .{
+                    .width = @intCast(item.name.len),
+                    .grapheme = item.name,
+                },
+                .style = ui.style_list_item(playlist_list.selected == i),
+            });
         }
     }
 
