@@ -5,12 +5,19 @@ const List = @import("../components/list.zig").List;
 const vaxis = @import("vaxis");
 const time = @import("../misc/time.zig");
 
-fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) !void {
+fn drawPlaylistContent(
+    music: std.ArrayList(*Playlist),
+    selected_index: usize,
+    music_window: vaxis.Window,
+    music_list: *List,
+) !void {
     if (music.items.len == 0) {
         return;
     }
 
-    if (music.items[selected_index].content) |content| {
+    const safe_selected_index = @min(selected_index, music.items.len - 1);
+
+    if (music.items[safe_selected_index].content) |content| {
         music_window.clear();
 
         music_list.draw(music_window, content.items.len, music_window.width);
@@ -25,7 +32,7 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
             });
         }
 
-        const duration = try music.items[selected_index].getReadableDuration();
+        const duration = try music.items[safe_selected_index].getReadableDuration();
 
         _ = music_window.printSegment(.{ .text = duration }, .{
             .col_offset = @intCast(music_window.width - duration.len),
@@ -41,9 +48,7 @@ fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, m
     }
 }
 
-pub fn drawMainView(allocator: std.mem.Allocator, playlist_list: *List, music: std.ArrayList(*Playlist), music_window: vaxis.Window, music_list: *List) !void {
-    _ = allocator;
-
+pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music_window: vaxis.Window, music_list: *List) !void {
     if (music.items.len == 0) {
         if (playlist_list.window) |window| {
             const empty_text = "No playlists :(";
