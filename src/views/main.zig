@@ -6,11 +6,9 @@ const vaxis = @import("vaxis");
 const time = @import("../misc/time.zig");
 
 fn drawPlaylistContent(music: std.ArrayList(*Playlist), selected_index: usize, music_window: vaxis.Window, music_list: *List) !void {
-    // std.debug.assert(selected_index < music.items.len);
-    // std.debug.print(
-    //     "selected_index={}, music.items.len={}\n",
-    //     .{ selected_index, music.items.len },
-    // );
+    if (music.items.len == 0) {
+        return;
+    }
 
     if (music.items[selected_index].content) |content| {
         music_window.clear();
@@ -52,6 +50,16 @@ pub fn drawMainView(playlist_list: *List, music: std.ArrayList(*Playlist), music
             },
             .style = ui.style_list_item(playlist_list.selected == i),
         });
+    } else {
+        if (playlist_list.window) |window| {
+            const empty_text = "No playlists :(";
+
+            try ui.drawText(vaxis.widgets.alignment.center(
+                window,
+                empty_text.len,
+                1,
+            ), empty_text, 0, 0);
+        }
     }
 
     var x: [64]u8 = [1]u8{0} ** 64;
