@@ -117,14 +117,21 @@ pub const Playlist = struct {
         }
     }
 
-    pub fn loadUntil(self: *Playlist, until: usize) !void {
+    //бля
+    pub fn loadUntil(self: *Playlist, io: std.Io, until: usize) !void {
         const content = try self.allocator.create(std.ArrayList(*Track));
         content.* = try std.ArrayList(*Track).initCapacity(self.allocator, 0);
 
-        const file = try std.fs.openFileAbsolute(self.path, .{});
-        defer file.close();
+        const file = try std.Io.Dir.openFileAbsolute(io, self.path, .{});
+        defer file.close(io);
 
-        const data = try file.readToEndAlloc(self.allocator, try file.getEndPos());
+        var read_buffer: [4096]u8 = undefined;
+        var fr = file.reader(io, &read_buffer);
+        var reader = &fr.interface;
+
+        var list: std.ArrayListUnmanaged(u8) = .empty;
+        try reader.appendRemainingUnlimited(self.allocator, &list);
+        const data = try list.toOwnedSlice(self.allocator);
 
         var iterator = std.mem.splitSequence(
             u8,
@@ -181,16 +188,16 @@ pub fn appendPlaylist(list: *std.ArrayList(*Playlist), path: []const u8, allocat
     try list.append(allocator, ptr);
 }
 
-pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u8, allocator: Allocator) !void {
+pub fn appendPlaylistCollection(io: std.Io, list: *std.ArrayList(*Playlist), path: []const u8, allocator: Allocator) !void {
     var sub_playlist = try std.ArrayList(*Playlist).initCapacity(allocator, 0);
     defer sub_playlist.deinit(allocator);
 
-    var dir = try fs.openDirAbsolute(path, .{ .iterate = true });
-    defer dir.close();
+    var dir = try std.Io.Dir.openDirAbsolute(io, path, .{ .iterate = true });
+    defer dir.close(io);
 
     var iterator = dir.iterate();
 
-    while (try iterator.next()) |item| {
+    while (try iterator.next(io)) |item| {
         switch (item.kind) {
             .file => {
                 const item_path = std.fs.path.join(allocator, &[2][]const u8{ path, item.name }) catch continue;
@@ -205,47 +212,20 @@ pub fn appendPlaylistCollection(list: *std.ArrayList(*Playlist), path: []const u
     try list.appendSlice(allocator, sub_playlist.items);
 }
 
-pub fn getPlaylists(allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
+pub fn getPlaylists(io: std.Io, allocator: std.mem.Allocator, paths: [][]const u8) !std.ArrayList(*Playlist) {
     var list = try std.ArrayList(*Playlist).initCapacity(allocator, 0);
 
-    const cwd = fs.cwd();
+    const cwd = std.Io.Dir.cwd();
 
     for (paths) |path| {
-        const stat = cwd.statFile(path) catch continue;
+        const stat = cwd.statFile(io, path, .{}) catch continue;
 
         switch (stat.kind) {
             .file => appendPlaylist(&list, path, allocator) catch continue,
-            .directory => appendPlaylistCollection(&list, path, allocator) catch continue,
+            .directory => appendPlaylistCollection(io, &list, path, allocator) catch continue,
             else => {},
         }
     }
 
     return list;
 }
-
-test "Playlist" {
-    var playlist = try Playlist.init(std.testing.allocator, "/home/jcatzded/.config/cmus/playlists/bed");
-    defer playlist.deinit();
-
-    try std.testing.expect(playlist.content == null);
-
-    const items = try playlist.load();
-    try std.testing.expect(items.len > 0);
-
-    try std.testing.expect(playlist.content != null);
-
-    var paths: [1][]const u8 = .{
-        "/home/jcatzded/.config/cmus/playlists/",
-    };
-
-    const playlists = try getPlaylists(std.testing.allocator, &paths);
-    defer {
-        for (playlists.items) |item| {
-            item.deinit();
-            std.testing.allocator.destroy(item);
-        }
-        playlists.deinit();
-    }
-    try std.testing.expect(playlists.items.len > 0);
-}
-

@@ -18,21 +18,34 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
+    const translate_c = b.addTranslateC(.{
+        .root_source_file = b.path("src/c.h"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    translate_c.linkSystemLibrary("avformat", .{});
+    translate_c.linkSystemLibrary("avutil", .{});
+    translate_c.linkSystemLibrary("avcodec", .{});
+    translate_c.linkSystemLibrary("asound", .{});
+    translate_c.linkSystemLibrary("FLAC", .{});
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{
+                .name = "c",
+                .module = translate_c.createModule(),
+            },
+        },
     });
 
     const exe = b.addExecutable(.{
         .name = "zmup",
         .root_module = exe_mod,
     });
-
-    exe.linkSystemLibrary("avformat");
-    exe.linkSystemLibrary("avutil");
-    exe.linkSystemLibrary("avcodec");
-    exe.linkLibC();
 
     const vaxis_dep = b.dependency("vaxis", .{
         .target = target,
@@ -81,4 +94,3 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
 }
-

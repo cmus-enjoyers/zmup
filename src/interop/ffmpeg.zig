@@ -1,4 +1,4 @@
-const c = @import("../root.zig").c;
+const c = @import("c");
 
 pub const AVError = error{
     /// AVERROR(ENOMEM)

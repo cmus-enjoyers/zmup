@@ -1,4 +1,4 @@
-const c = @import("../root.zig").c;
+const c = @import("c");
 const ffmpeg = @import("../interop/ffmpeg.zig");
 const std = @import("std");
 

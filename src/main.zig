@@ -1,21 +1,23 @@
 const std = @import("std");
-const vaxis = @import("vaxis");
-const ui = @import("ui/ui.zig");
-const List = @import("components/list.zig").List;
-const playlists = @import("playlists/playlists.zig");
-const sorting = @import("playlists/sorting.zig");
-const c = @import("root.zig").c;
-const time = @import("misc/time.zig");
-const colors = @import("misc/colors.zig");
-const drawMainView = @import("views/main.zig").drawMainView;
-const ffmpeg = @import("./interop/ffmpeg.zig");
-const laziness = @import("./keybinds/lazy.zig");
-const Metadata = @import("./playlists/metadata.zig").Metadata;
 
+const vaxis = @import("vaxis");
 const Cell = vaxis.Cell;
 const TextInput = vaxis.widgets.TextInput;
 const border = vaxis.widgets.border;
 const ScrollView = vaxis.widgets.ScrollView;
+
+const ffmpeg = @import("./interop/ffmpeg.zig");
+const laziness = @import("./keybinds/lazy.zig");
+const Metadata = @import("./playlists/metadata.zig").Metadata;
+// const sysaudio = @import("./sysaudio/main.zig");
+const c = @import("c");
+const List = @import("components/list.zig").List;
+const colors = @import("misc/colors.zig");
+const time = @import("misc/time.zig");
+const playlists = @import("playlists/playlists.zig");
+const sorting = @import("playlists/sorting.zig");
+const ui = @import("ui/ui.zig");
+const drawMainView = @import("views/main.zig").drawMainView;
 
 const Event = union(enum) {
     key_press: vaxis.Key,
@@ -23,25 +25,27 @@ const Event = union(enum) {
     focus_in,
 };
 
+//pub fn main() !void {}
+
 // TODO: add zmup (github.com/cmus-enjoyers/sneaky-cmup-10) and some cli things
 // TODO: man pages?!?!?!?!
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
+    // try sysaudio.main();
+
     // TODO: maybe change the allocator
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
 
     var buffer: [1024]u8 = undefined;
-    var tty = try vaxis.Tty.init(&buffer);
+
+    const io = init.io;
+    var tty = try vaxis.Tty.init(io, &buffer);
     defer tty.deinit();
 
-    var vx = try vaxis.init(allocator, .{});
+    var vx = try vaxis.init(io, allocator, init.environ_map, .{});
     defer vx.deinit(allocator, tty.writer());
 
-    var loop: vaxis.Loop(Event) = .{
-        .tty = &tty,
-        .vaxis = &vx,
-    };
-    try loop.init();
+    var loop: vaxis.Loop(Event) = .init(io, &tty, &vx);
 
     try loop.start();
     defer loop.stop();
@@ -50,18 +54,18 @@ pub fn main() !void {
 
     try vx.enterAltScreen(any_writer);
 
-    try vx.queryTerminal(any_writer, 1 * std.time.ns_per_s);
+    try vx.queryTerminal(any_writer, .fromSeconds(1));
 
     c.av_log_set_level(c.AV_LOG_DEBUG);
     c.av_log_set_level(c.AV_LOG_QUIET);
 
     try vx.setTitle(any_writer, "Zig music player");
 
-    const home = std.posix.getenv("HOME");
+    const home = init.minimal.environ.getPosix("HOME");
 
     var playlist_paths: [1][]const u8 = .{try std.fs.path.join(allocator, &[2][]const u8{ home.?, ".config/cmus/playlists" })};
 
-    var music = try playlists.getPlaylists(allocator, &playlist_paths);
+    var music = try playlists.getPlaylists(io, allocator, &playlist_paths);
 
     try sorting.sort(music, sorting.SortMethods.greater);
 
@@ -82,14 +86,15 @@ pub fn main() !void {
     var selected_view = &playlist_list;
 
     while (true) {
-        switch (loop.nextEvent()) {
+        const event = try loop.nextEvent();
+        switch (event) {
             .key_press => |key| {
                 if (key.matches('q', .{})) {
                     break;
                 }
 
                 if (key.matches(13, .{})) {
-                    try music.items[playlist_list.selected].loadUntil(music_window.?.height);
+                    try music.items[playlist_list.selected].loadUntil(io, music_window.?.height);
                     selected_view = &music_list;
                 }
 
